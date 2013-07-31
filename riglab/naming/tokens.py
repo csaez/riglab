@@ -28,7 +28,7 @@ class TokenInterface(object):
     def isvalid(self, value):
         return True
 
-    def export(self):
+    def save(self):
         # collect data
         data = dict()
         for k, v in self.__dict__.iteritems():
@@ -47,8 +47,8 @@ class TokenInterface(object):
 
 class DictToken(TokenInterface):
 
-    def __init__(self, name):
-        super(DictToken, self).__init__(name)
+    def __init__(self, *args, **kwds):
+        super(DictToken, self).__init__(*args, **kwds)
         self.values = dict()
 
     def get(self, value):
@@ -79,10 +79,14 @@ class StringToken(TokenInterface):
 
 class NumberToken(TokenInterface):
 
+    def __init__(self, *args, **kwds):
+        super(NumberToken, self).__init__(*args, **kwds)
+        self.padding = 3
+
     def get(self, value):
         if not self.isvalid(value):
             return None
-        return str(int(value)).zfill(3)
+        return str(int(value)).zfill(self.padding)
 
     def isvalid(self, value):
         try:

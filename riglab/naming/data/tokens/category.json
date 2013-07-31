@@ -1,16 +1,16 @@
 {
-    "default": "TEST", 
-    "classname": "DictToken", 
+    "default": "test",
+    "classname": "DictToken",
     "values": {
-        "code": "CODE", 
-        "environment": "ENV", 
-        "camera": "CAM", 
-        "graphic user interface": "GUI", 
-        "test": "TEST", 
-        "top level": "ROOT", 
-        "character": "CH", 
-        "miscellaneous": "MISC", 
+        "code": "CODE",
+        "environment": "ENV",
+        "camera": "CAM",
+        "graphic user interface": "GUI",
+        "test": "TEST",
+        "top level": "ROOT",
+        "character": "CH",
+        "miscellaneous": "MISC",
         "prop": "PROP"
-    }, 
+    },
     "name": "category"
 }

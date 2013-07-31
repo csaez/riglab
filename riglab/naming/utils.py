@@ -58,9 +58,10 @@ class Manager(object):
             cls = globals().get(data.get("classname"))
             if cls:
                 token = cls(data.get("name"))
-                values = data.get("values")
-                if values:
-                    token.values = values
+                if data.get("values"):
+                    token.values = data.get("values")
+                if data.get("padding"):
+                    token.padding = data.get("padding")
                 token.default = data.get("default")
                 self._tokens[token.name] = token
         return self._tokens
@@ -69,12 +70,19 @@ class Manager(object):
     def override(self, **kwds):
         defaults = dict()
         for k, v in kwds.iteritems():
+            if k == "rule":
+                defaults["rule"] = self.rule
+                self.rule = v
+                continue
             token = self.tokens.get(k)
             if token:
                 defaults[k] = token.default
                 token.default = token.get(v)
         yield
         for k, v in defaults.iteritems():
+            if k == "rule":
+                self.rule = v
+                continue
             self.tokens[k].default = v
 
     def quickname(self, *args, **kwargs):
@@ -105,7 +113,11 @@ class Manager(object):
             if token_name not in _data.keys() and token.default:
                 _data[token_name] = token.default
         # build name from rule
-        name = self.rules.get(self.rule)
+        rule = self.rule
+        for k, v in kwargs.iteritems():
+            if k == "rule":
+                rule = v
+        name = self.rules.get(rule)
         for token_name, token_value in _data.iteritems():
             name = name.replace(token_name, token_value)
         for token_name in self.tokens.keys():

@@ -1,5 +1,5 @@
 {
-    "default": "000", 
-    "classname": "NumberToken", 
+    "default": 0,
+    "classname": "NumberToken",
     "name": "itemNumber"
 }
