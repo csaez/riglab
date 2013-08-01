@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>516</width>
-    <height>379</height>
+    <height>406</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -473,8 +473,8 @@ background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgb
    <slot>add_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>182</x>
-     <y>92</y>
+     <x>166</x>
+     <y>107</y>
     </hint>
     <hint type="destinationlabel">
      <x>439</x>
@@ -489,12 +489,108 @@ background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgb
    <slot>remove_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>205</x>
-     <y>88</y>
+     <x>189</x>
+     <y>107</y>
     </hint>
     <hint type="destinationlabel">
      <x>437</x>
      <y>245</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>expr_lineEdit</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>rule_updated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>378</x>
+     <y>69</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>520</x>
+     <y>92</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>padding_spinBox</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>token_updated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>393</x>
+     <y>258</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>523</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>default_groupBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>token_updated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>224</x>
+     <y>280</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>518</x>
+     <y>302</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>default_lineEdit</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>token_updated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>305</x>
+     <y>314</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>520</x>
+     <y>336</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>default_spinBox</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>token_updated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>410</x>
+     <y>340</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>520</x>
+     <y>364</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>default_comboBox</sender>
+   <signal>currentIndexChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>token_updated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>366</x>
+     <y>366</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>519</x>
+     <y>394</y>
     </hint>
    </hints>
   </connection>
@@ -506,5 +602,7 @@ background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgb
   <slot>token_changed()</slot>
   <slot>add_clicked()</slot>
   <slot>remove_clicked()</slot>
+  <slot>rule_updated()</slot>
+  <slot>token_updated()</slot>
  </slots>
 </ui>

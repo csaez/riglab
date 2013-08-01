@@ -66,6 +66,12 @@ class Manager(object):
                 self._tokens[token.name] = token
         return self._tokens
 
+    def new_token(self, name, classname):
+        cls = globals().get(classname)
+        self.tokens[name] = cls(name)
+        self.tokens[name].save()
+        return self.tokens[name]
+
     @contextmanager
     def override(self, **kwds):
         defaults = dict()

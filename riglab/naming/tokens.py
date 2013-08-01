@@ -36,13 +36,15 @@ class TokenInterface(object):
                 data[k] = v
         data["default"] = self.default
         data["classname"] = self.__class__.__name__
-        print data
         # serialization
         if not os.path.exists(self.TOKEN_DIR):
             os.makedirs(self.TOKEN_DIR)
         fp = os.path.join(self.TOKEN_DIR, "{}.json".format(self.name))
         with open(fp, "w") as f:
             json.dump(data, f, indent=4)
+
+    def destroy(self):
+        os.remove(os.path.join(self.TOKEN_DIR, "{}.json".format(self.name)))
 
 
 class DictToken(TokenInterface):
