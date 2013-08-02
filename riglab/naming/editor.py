@@ -59,7 +59,7 @@ class Editor(QMainWindow):
         visibility = {"StringToken": (False, False, True, False, False),
                       "NumberToken": (False, True, False, True, False),
                       "DictToken": (True, False, False, False, True)}
-        widgets = (self.ui.values_tableWidget,
+        widgets = (self.ui.values_frame,
                    self.ui.padding_frame,
                    self.ui.default_lineEdit,
                    self.ui.default_spinBox,
@@ -148,7 +148,6 @@ class Editor(QMainWindow):
                 v = self.ui.values_tableWidget.item(i, 1)
                 if k and v:
                     token.values[str(k.text())] = str(v.text())
-                    print token.values
         # defaults
         values = {"StringToken": (self.ui.default_groupBox.isChecked(),
                                   str(self.ui.default_lineEdit.text())),
@@ -167,24 +166,68 @@ class Editor(QMainWindow):
         # save changes
         token.save()
 
+    def addValue_clicked(self):
+        self.ui.values_tableWidget.insertRow(0)
+
+    def removeValue_clicked(self):
+        index = self.ui.values_tableWidget.currentRow()
+        self.ui.values_tableWidget.removeRow(index)
+        self.values_changed(-1, -1)
+
+    def values_changed(self, row, column):
+        if not self.save:
+            return
+        # update token
+        name = str(self.ui.items_listWidget.currentItem().text())
+        token = self.nm.tokens[name]
+        default = str(token.default)  # save default before token changes
+        token.values.clear()
+        for i in range(self.ui.values_tableWidget.rowCount()):
+            k = self.ui.values_tableWidget.item(i, 0)
+            v = self.ui.values_tableWidget.item(i, 1)
+            if k and v and len(str(k.text())):
+                k, v = str(k.text()), str(v.text())
+                token.values[k] = v
+        token.save()
+        # restore defaults
+        self.ui.default_comboBox.clear()
+        defaultIndex = -1
+        for i, (k, v) in enumerate(token.values.iteritems()):
+            self.ui.default_comboBox.addItem(k)
+            if v == default:
+                defaultIndex = i
+        self.ui.default_comboBox.setCurrentIndex(defaultIndex)
+
+    def expr_clicked(self):
+        token = self.menu_show(self.nm.tokens.keys())
+        if not token:
+            return
+        expr = str(self.ui.expr_lineEdit.text()) + token
+        self.ui.expr_lineEdit.setText(expr)
+
     def add_rule(self, name):
         self.nm.rules[name] = ""
         self.list_clicked()
         self.ui.items_listWidget.setCurrentRow(0)
 
     def add_token(self, name):
-        menu = QtGui.QMenu(self)
-        for classname in self.TOKEN_CLASSES:
-            menu.addAction(classname)
-        pos = QtGui.QCursor.pos()
-        menu.move(pos.x(), pos.y())
-        action = menu.exec_()
-        if not action:
+        classname = self.menu_show(self.TOKEN_CLASSES)
+        if not classname:
             return
-        classname = str(action.text())
         self.nm.new_token(str(self.ui.filter_lineEdit.text()), classname)
         self.list_clicked()
         self.ui.items_listWidget.setCurrentRow(0)
+
+    def menu_show(self, items):
+        menu = QtGui.QMenu(self)
+        for x in items:
+            menu.addAction(x)
+        pos = QtGui.QCursor.pos()
+        menu.move(pos.x(), pos.y())
+        action = menu.exec_()
+        if action:
+            return str(action.text())
+        return None
 
 
 def main():
