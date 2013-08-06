@@ -20,7 +20,8 @@ class Base(SIWrapper):
         self.output = {"root": None,
                        "tm": list(),
                        "snap_ref": list()}
-        self.hidden = list()
+        self.helpers = {"root": None,
+                        "hidden": list()}
         super(Base, self).__init__(obj, "Solver_Data")
 
     def build(self, skeleton):
@@ -39,7 +40,7 @@ class Base(SIWrapper):
                 # calc length
                 next = self.input.get("skeleton")[i + 1]
                 self.input.get("length").append(self.get_distance(bone, next))
-        self.hidden.extend(self.output.get("tm"))
+        self.helpers.get("hidden").extend(self.output.get("tm"))
         self.custom_inputs()  # input custom parameters
         self.custom_build()  # solver implementation
         self.connect()
@@ -78,7 +79,7 @@ class Base(SIWrapper):
                 cns.Parameters(param).AddExpression(expr)
 
     def style(self):
-        for x in self.hidden:
+        for x in self.helpers.get("hidden"):
             x.Properties("Visibility").Parameters("viewvis").Value = False
 
     @property
@@ -102,25 +103,26 @@ class Base(SIWrapper):
     def create(cls, skeleton, name=None):
         # solver objs
         obj = si.ActiveSceneRoot.AddNull()
-        solver = cls(obj, name=name)
-        solver.output["root"] = obj.AddNull()
-        solver.input["root"] = obj.AddNull()
+        s = cls(obj, name=name)
+        s.output["root"] = obj.AddNull()
+        s.helpers["root"] = obj.AddNull()
+        s.input["root"] = obj.AddNull()
         # rename
-        solver.obj.Name = cls.nm.qn(solver.solvername + "Solver", "group")
-        solver.output["root"].Name = cls.nm.qn(solver.solvername +
-                                               "Output", "group")
-        solver.input["root"].Name = cls.nm.qn(solver.solvername +
-                                              "Input", "group")
+        s.obj.Name = cls.nm.qn(s.solvername + "Solver", "group")
+        s.output["root"].Name = cls.nm.qn(s.solvername + "Output", "group")
+        s.helpers["root"].Name = cls.nm.qn(s.solvername + "Helpers", "group")
+        s.input["root"].Name = cls.nm.qn(s.solvername + "Input", "group")
         # add to hidden list
-        solver.hidden.extend([solver.obj,
-                              solver.input.get("root"),
-                              solver.output.get("root")])
+        s.helpers.get("hidden").extend([s.obj, s.input.get("root"),
+                                       s.output.get("root"),
+                                       s.helpers.get("root")])
         # build
-        solver.build(skeleton)
-        solver.update()  # update mutable data serialization
-        return solver
+        s.build(skeleton)
+        s.update()  # update mutable data serialization
+        return s
 
     @classmethod
     def from_name(cls, name):
+        name = cls.nm.qn(name + "Solver", "group")
         obj = siget(name)
         return cls(obj)

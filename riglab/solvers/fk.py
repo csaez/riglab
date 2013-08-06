@@ -28,7 +28,7 @@ class FK(Base):
         for i, each in enumerate(anim):
             each.rename(self.solvername, i)
             self.input.get("anim").append(each.anim)
-            self.hidden.extend([each.zero, each.space])
+            self.helpers.get("hidden").extend([each.zero, each.space])
         # update data holder
         self.update()
 
