@@ -16,7 +16,8 @@ class IK(Base):
     def custom_build(self):
         super(IK, self).custom_build()
         # anim controls
-        anim_root = Manipulator.create(parent=self.input.get("root"))
+        anim_root = Manipulator.new(parent=self.input.get("root"))
+        anim_root.owner = {"obj": self.obj, "class": self.classname}
         anim_root.icon.shape = "Rounded_Square"
         anim_eff, anim_upv = anim_root.duplicate(2)  # OPTIMIZATION
         anim_eff.icon.connect = anim_root.anim

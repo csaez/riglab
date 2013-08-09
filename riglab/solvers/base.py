@@ -1,4 +1,5 @@
-from wishlib.si import si, siget, C, SIWrapper
+from wishlib.si import si, siget, C, SIWrapper, sianchor
+from wishlib.qt.QtGui import QProgressDialog
 
 from .. import naming
 
@@ -24,10 +25,20 @@ class Base(SIWrapper):
                         "hidden": list()}
         super(Base, self).__init__(obj, "Solver_Data")
 
+        # progress bar
+        self.pb = QProgressDialog(sianchor())
+        self.pb.setMinimum(0)
+        self.pb.setMaximum(100)
+
     def build(self, skeleton):
         self.input["skeleton"] = list(skeleton)
         if not self.validate():
             return
+
+        # init
+        self.pb.show()
+        self.pb.setLabelText("Init solver")
+        self.pb.setValue(20)
         limit = len(self.input.get("skeleton")) - 1
         for i, bone in enumerate(self.input.get("skeleton")):
             # set bone params
@@ -41,10 +52,30 @@ class Base(SIWrapper):
                 next = self.input.get("skeleton")[i + 1]
                 self.input.get("length").append(self.get_distance(bone, next))
         self.helpers.get("hidden").extend(self.output.get("tm"))
-        self.custom_inputs()  # input custom parameters
-        self.custom_build()  # solver implementation
+
+        # custom parameters
+        self.pb.setLabelText("Custom parameters")
+        self.pb.setValue(40)
+        self.custom_inputs()
+
+        # solver implementation
+        self.pb.setLabelText("Building {0}Solver".format(self.classname))
+        self.pb.setValue(60)
+        self.custom_build()
+
+        # connect
+        self.pb.setLabelText("Connecting")
+        self.pb.setValue(80)
         self.connect()
+
+        # style
+        self.pb.setLabelText("Styling")
+        self.pb.setValue(100)
         self.style()
+        self.pb.close()
+
+        # refresh softimage ui
+        si.Refresh()
 
     def custom_inputs(self):
         # parameters
@@ -81,6 +112,10 @@ class Base(SIWrapper):
     def style(self):
         for x in self.helpers.get("hidden"):
             x.Properties("Visibility").Parameters("viewvis").Value = False
+        # link anim visibility with solver state
+        for anim in self.input.get("anim"):
+            viewvis = anim.Properties("Visibility").Parameters("viewvis")
+            viewvis.AddExpression(self.input.get("blendweight").FullName)
 
     @property
     def state(self):
@@ -92,6 +127,10 @@ class Base(SIWrapper):
     def state(self, value):
         if self.input.get("active"):
             self.input.get("active").Value = value
+            self.input.get("blendweight").Value = float(value)
+
+    def destroy(self):
+        si.DeleteObj("B:{}".format(self.obj))
 
     @staticmethod
     def get_distance(src, dst):
@@ -100,7 +139,7 @@ class Base(SIWrapper):
         return v.Length()
 
     @classmethod
-    def create(cls, skeleton, name=None):
+    def new(cls, skeleton, name=None):
         # solver objs
         obj = si.ActiveSceneRoot.AddNull()
         s = cls(obj, name=name)

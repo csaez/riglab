@@ -9,6 +9,7 @@ class Manipulator(SIWrapper):
 
     def __init__(self, obj):
         self.spaces = dict()
+        self.owner = {"obj": None, "class": None}
         super(Manipulator, self).__init__(obj, "Manipulator_Data")
         self.anim = obj
         self.icon = Icon(self.anim)
@@ -16,12 +17,12 @@ class Manipulator(SIWrapper):
         self.space = self.zero.Parent
 
     @classmethod
-    def create(cls, parent=None):
+    def new(cls, parent=None):
         if parent is None:
             parent = si.ActiveSceneRoot
         space = parent.AddNull()
         zero = space.AddNull()
-        icon = Icon.create()
+        icon = Icon.new()
         anim = icon.obj
         zero.AddChild(anim)
         manipulator = cls(anim)
@@ -70,24 +71,32 @@ class Manipulator(SIWrapper):
         for x in (self.anim, self.zero, self.space):
             si.DeleteObj(x)
 
-    def align(self, dst):
-        self.zero.Kinematics.Global.Transform = dst.Kinematics.Global.Transform
+    def align(self, dst, component="zero"):
+        if hasattr(self, component):
+            src = getattr(self, component)
+            src.Kinematics.Global.Transform = dst.Kinematics.Global.Transform
 
     def set_neutral(self):
         self.zero.Kinematics.Global.Transform = self.anim.Kinematics.Global.Transform
 
     def duplicate(self, number=1):
         results = list()
-        spaces = si.Duplicate(self.space, number)
-        zeroes = si.Duplicate(self.zero, number)
-        anims = si.Duplicate(self.anim, number)
+        copies = si.Duplicate((self.space, self.zero, self.anim), number)
         for i in range(number):
-            self.space.Parent.AddChild(spaces[i])
-            spaces[i].AddChild(zeroes[i])
-            zeroes[i].AddChild(anims[i])
-            results.append(self.__class__(anims[i]))
+            i *= 3
+            self.space.Parent.AddChild(copies[i + 0])
+            copies[i + 0].AddChild(copies[i + 1])
+            copies[i + 1].AddChild(copies[i + 2])
+            results.append(self.__class__(copies[i + 2]))
         return results
 
     def set_parent(self, obj):
         obj.AddChild(self.space)
         self.update()
+
+    def get_solver(self):
+        from . import solvers
+        if self.owner.get("class") and self.owner.get("class"):
+            cls = getattr(solvers, self.owner.get("class"))
+            return cls(self.owner.get("obj"))
+        return None
