@@ -35,7 +35,8 @@ class Manager(object):
             return self._rules
         fp = os.path.join(self.NAMING_DIR, "rules.json")
         if not os.path.exists(fp):
-            src = os.path.join(os.path.dirname(__file__), "data", "rules.json")
+            src = os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                                "..", "data", "rules.json"))
             shutil.copy(src, self.NAMING_DIR)
         self._rules = JSONDict(fp)
         return self._rules
@@ -46,7 +47,8 @@ class Manager(object):
             return self._tokens
         token_dir = os.path.join(self.NAMING_DIR, "tokens")
         if not os.path.exists(token_dir):
-            src = os.path.join(os.path.dirname(__file__), "data", "tokens")
+            src = os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                                "..", "data", "tokens"))
             shutil.copytree(src, os.path.join(self.NAMING_DIR, "tokens"))
         self._tokens = dict()
         for fp in os.listdir(token_dir):
