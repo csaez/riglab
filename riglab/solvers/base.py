@@ -70,7 +70,9 @@ class Base(SIWrapper):
         # connect
         self.pb.setLabelText("Connecting")
         self.pb.setValue(90)
-        self.connect()
+        a = bonetools.get_deep(self.input["skeleton"][0])
+        b = bonetools.get_deep(self.input["skeleton"][-1])
+        (self.connect, self.connect_reverse)[int(a > b)]()
 
         # style
         self.pb.setLabelText("Styling")
@@ -125,6 +127,14 @@ class Base(SIWrapper):
                 expr = self.input.get(param).FullName
                 cns.Parameters(param).AddExpression(expr)
 
+    def connect_reverse(self):
+        for i, bone in enumerate(self.input.get("skeleton")[1:]):
+            target = self.output.get("tm")[i]
+            cns = bone.Kinematics.AddConstraint("Pose", target, True)
+            for param in ("active", "blendweight"):
+                expr = self.input.get(param).FullName
+                cns.Parameters(param).AddExpression(expr)
+
     def style(self):
         for x in self.helper.get("hidden"):
             x.Properties("Visibility").Parameters("viewvis").Value = False
@@ -147,12 +157,6 @@ class Base(SIWrapper):
 
     def destroy(self):
         si.DeleteObj("B:{}".format(self.obj))
-
-    @staticmethod
-    def get_distance(src, dst):
-        v = dst.Kinematics.Global.Transform.Translation
-        v.SubInPlace(src.Kinematics.Global.Transform.Translation)
-        return v.Length()
 
     @classmethod
     def new(cls, skeleton, name=None):

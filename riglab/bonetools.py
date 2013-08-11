@@ -44,6 +44,13 @@ def align_matrix4(obj, matrix):
     obj.Kinematics.Global.Transform = tm
 
 
+def get_deep(obj, i=0):
+    if obj.Parent.FullName != si.ActiveSceneRoot.FullName:
+        i += 1
+        i += get_deep(obj.Parent)
+    return i
+
+
 # CONVERTERS
 def sel2curve(sel, parent=None):
     parent = parent or si.ActiveSceneRoot
