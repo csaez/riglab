@@ -15,16 +15,17 @@ def curve_data(curve):
     matrices = geo.GetICEAttributeFromName("TM").DataArray2D[0][0]
     lengths = geo.GetICEAttributeFromName("length").DataArray2D[0][0]
     si.DeleteObj(ICE)
-    data = (matrices, list(lengths) + [None])
+    data = (matrices, list(lengths) + [0.0])
     return namedtuple("CurveData", "matrices, lengths")._make(data)
 
 
-def style_null(null, length):
-    null.Parameters("primary_icon").Value = 0
+def style_null(null, length=0, size=0.25):
+    null.Parameters("primary_icon").Value = 2
     null.Parameters("shadow_icon").Value = 4
-    null.Parameters("shadow_offsetX").Value = length / 2
-    null.Parameters("shadow_scaleX").Value = length
-    null.Parameters("shadow_scaleY").Value = 0.25
+    null.Parameters("size").Value = size
+    null.Parameters("shadow_offsetX").Value = length / (2 * size)
+    null.Parameters("shadow_scaleX").Value = length / size
+    null.Parameters("shadow_scaleY").Value = 0.5
     null.Parameters("shadow_scaleZ").Value = 0.25
 
 
@@ -35,6 +36,12 @@ def rename_chain(chain, itemName, rule="3dobject"):
     chain.Root.Effector.Name = nm.qn(itemName + "Eff", "jnt")
     for i, bone in enumerate(chain.Root.Bones):
         bone.Name = nm.qn(itemName, "jnt", i)
+
+
+def align_matrix4(obj, matrix):
+    tm = obj.Kinematics.Global.Transform
+    tm.SetMatrix4(matrix)
+    obj.Kinematics.Global.Transform = tm
 
 
 # CONVERTERS
@@ -59,11 +66,8 @@ def curve2null(curve, parent=None):
     result = list()
     for matrix, length in zip(*curve_data(curve)):
         parent = parent.AddNull()
-        tm = parent.Kinematics.Global.Transform
-        tm.SetMatrix4(matrix)
-        parent.Kinematics.Global.Transform = tm
-        if length:
-            style_null(parent, length)
+        style_null(parent, length=length)
+        align_matrix4(parent, matrix)
         result.append(parent)
     return result
 
@@ -73,8 +77,11 @@ def curve2chain(curve, parent=None):
     data = curve_data(curve)
     pos = [x.Get2()[12:-1] for x in data.matrices]
     root = si.Create2DSkeleton(*list(pos[0] + pos[1]))
+    root.Kinematics.Global.Transform = root.Bones(
+        0).Kinematics.Global.Transform
     for i, position in enumerate(pos[2:]):
         si.AppendBone(root.Effector, *position)
+    parent.AddChild(root)
     return root
 
 

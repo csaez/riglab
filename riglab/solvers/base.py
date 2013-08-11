@@ -2,6 +2,7 @@ from wishlib.si import si, siget, C, SIWrapper, sianchor
 from wishlib.qt.QtGui import QProgressDialog
 
 from .. import naming
+from .. import bonetools
 
 
 class Base(SIWrapper):
@@ -21,8 +22,9 @@ class Base(SIWrapper):
         self.output = {"root": None,
                        "tm": list(),
                        "snap_ref": list()}
-        self.helpers = {"root": None,
-                        "hidden": list()}
+        self.helper = {"root": None,
+                       "hidden": list(),
+                       "curve": None}
         super(Base, self).__init__(obj, "Solver_Data")
 
         # progress bar
@@ -48,24 +50,26 @@ class Base(SIWrapper):
                 # set outputs
                 name = self.nm.qn(self.solvername, i, "rig")
                 self.output["tm"].append(self.output.get("root").AddNull(name))
-                # calc length
-                next = self.input.get("skeleton")[i + 1]
-                self.input.get("length").append(self.get_distance(bone, next))
-        self.helpers.get("hidden").extend(self.output.get("tm"))
+        self.helper.get("hidden").extend(self.output.get("tm"))
 
         # custom parameters
         self.pb.setLabelText("Custom parameters")
         self.pb.setValue(40)
         self.custom_inputs()
 
+        # anim controls
+        self.pb.setLabelText("Creating anim controls")
+        self.pb.setValue(60)
+        self.create_anim()
+
         # solver implementation
         self.pb.setLabelText("Building {0}Solver".format(self.classname))
-        self.pb.setValue(60)
+        self.pb.setValue(80)
         self.custom_build()
 
         # connect
         self.pb.setLabelText("Connecting")
-        self.pb.setValue(80)
+        self.pb.setValue(90)
         self.connect()
 
         # style
@@ -75,7 +79,19 @@ class Base(SIWrapper):
         self.pb.close()
 
         # refresh softimage ui
+        self.update()
         si.Refresh()
+
+    def create_anim(self):
+        self.helper["curve"] = bonetools.sel2curve(self.input.get("skeleton"),
+                                                   parent=self.helper["root"])
+        self.helper["curve"].Name = self.nm.qn(self.solvername, "curve")
+        self.helper["hidden"].append(self.helper.get("curve"))
+        self.custom_anim()
+
+    def custom_anim(self):
+        # raise NotImplementedError()
+        pass
 
     def custom_inputs(self):
         # parameters
@@ -104,13 +120,13 @@ class Base(SIWrapper):
     def connect(self):
         for i, bone in enumerate(self.input.get("skeleton")[:-1]):
             target = self.output.get("tm")[i]
-            cns = bone.Kinematics.AddConstraint("Pose", target)
+            cns = bone.Kinematics.AddConstraint("Pose", target, True)
             for param in ("active", "blendweight"):
                 expr = self.input.get(param).FullName
                 cns.Parameters(param).AddExpression(expr)
 
     def style(self):
-        for x in self.helpers.get("hidden"):
+        for x in self.helper.get("hidden"):
             x.Properties("Visibility").Parameters("viewvis").Value = False
         # link anim visibility with solver state
         for anim in self.input.get("anim"):
@@ -144,17 +160,17 @@ class Base(SIWrapper):
         obj = si.ActiveSceneRoot.AddNull()
         s = cls(obj, name=name)
         s.output["root"] = obj.AddNull()
-        s.helpers["root"] = obj.AddNull()
+        s.helper["root"] = obj.AddNull()
         s.input["root"] = obj.AddNull()
         # rename
         s.obj.Name = cls.nm.qn(s.solvername + "Solver", "group")
         s.output["root"].Name = cls.nm.qn(s.solvername + "Output", "group")
-        s.helpers["root"].Name = cls.nm.qn(s.solvername + "Helpers", "group")
+        s.helper["root"].Name = cls.nm.qn(s.solvername + "Helper", "group")
         s.input["root"].Name = cls.nm.qn(s.solvername + "Input", "group")
         # add to hidden list
-        s.helpers.get("hidden").extend([s.obj, s.input.get("root"),
+        s.helper.get("hidden").extend([s.obj, s.input.get("root"),
                                        s.output.get("root"),
-                                       s.helpers.get("root")])
+                                       s.helper.get("root")])
         # build
         s.build(skeleton)
         s.update()  # update mutable data serialization
