@@ -1,7 +1,8 @@
-from wishlib.si import si, SIWrapper
+from wishlib.si import si, simath, SIWrapper
 from rigicon.icon import Icon
 
 from . import naming
+from . import bonetools
 
 
 class Manipulator(SIWrapper):
@@ -10,6 +11,11 @@ class Manipulator(SIWrapper):
     def __init__(self, obj):
         self.spaces = dict()
         self.owner = {"obj": None, "class": None}
+        self._snap_ref = {"obj": None,
+                          "offset": (1, 0, 0, 0,
+                                     0, 1, 0, 0,
+                                     0, 0, 1, 0,
+                                     0, 0, 0, 1)}
         super(Manipulator, self).__init__(obj, "Manipulator_Data")
         self.anim = obj
         self.icon = Icon(self.anim)
@@ -64,6 +70,7 @@ class Manipulator(SIWrapper):
             self.space.Name = self.nm.qn("group", *args, **kwds)
             self.zero.Name = self.nm.qn("zero", *args, **kwds)
             self.anim.Name = self.nm.qn("anim", *args, **kwds)
+        self.update()
 
     def destroy(self):
         for child in self.anim.Children:
@@ -76,7 +83,7 @@ class Manipulator(SIWrapper):
             src = getattr(self, component)
             src.Kinematics.Global.Transform = dst.Kinematics.Global.Transform
 
-    def set_neutral(self):
+    def neutral_pose(self):
         self.zero.Kinematics.Global.Transform = self.anim.Kinematics.Global.Transform
 
     def duplicate(self, number=1):
@@ -90,13 +97,26 @@ class Manipulator(SIWrapper):
             results.append(self.__class__(copies[i + 2]))
         return results
 
-    def set_parent(self, obj):
-        obj.AddChild(self.space)
-        self.update()
+    @property
+    def parent(self):
+        return self.space.Parent
 
-    def get_solver(self):
-        from . import solvers
-        if self.owner.get("class") and self.owner.get("class"):
-            cls = getattr(solvers, self.owner.get("class"))
-            return cls(self.owner.get("obj"))
-        return None
+    @parent.setter
+    def parent(self, obj):
+        if obj:
+            obj.AddChild(self.space)
+            self.update()
+
+    def snap_ref(self, ref):
+        m4 = self.zero.Kinematics.Global.Transform.Matrix4
+        refM4 = ref.Kinematics.Global.Transform.Matrix4
+        refM4.InvertInPlace()
+        m4.MulInPlace(refM4)
+        self._snap_ref = {"obj": ref, "offset": m4.Get2()}
+
+    def snap(self):
+        obj = self._snap_ref.get("obj")
+        if obj is not None:
+            m4 = simath.CreateMatrix4(*self._snap_ref["offset"])
+            m4.MulInPlace(obj.Kinematics.Global.Transform.Matrix4)
+            bonetools.align_matrix4(self.anim, m4)

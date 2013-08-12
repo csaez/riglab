@@ -22,7 +22,7 @@ class FK(Base):
         bonetools.align_matrix4(anim[0].zero, data[0][0])
         for i, (matrix, length) in enumerate(data[:-1]):
             m = anim[i + 1]
-            m.set_parent(anim[i].anim)
+            m.parent = anim[i].anim
             bonetools.align_matrix4(m.zero, matrix)
             m.icon.sclx = length
         # rename
@@ -35,9 +35,11 @@ class FK(Base):
     def custom_build(self):
         super(FK, self).custom_build()
         for i, bone in enumerate(self.input.get("skeleton")[:-1]):
-            self.output.get("snap_ref").append(bone)
             anim = self.input["anim"][i + 1]
             self.output["tm"][i].Kinematics.AddConstraint("Pose", anim)
+            # set snap reference
+            Manipulator(anim).snap_ref(bone)
 
-    def validate(self):
-        return len(self.input.get("skeleton")) > 1
+    @staticmethod
+    def validate(skeleton):
+        return len(skeleton) > 1

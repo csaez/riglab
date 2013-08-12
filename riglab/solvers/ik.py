@@ -32,7 +32,7 @@ class IK(Base):
         bonetools.align_matrix4(anim_root.zero, data[0][0])
         bonetools.align_matrix4(anim_eff.zero, data[0][-1])
         bonetools.align_matrix4(anim_upv.zero, data[0][1])
-        si.Translate(anim_upv.zero, 0, data[1][0], 0, "siRelative", "siLocal")
+        si.Translate(anim_upv.zero, 0, -data[1][0], 0, "siRelative", "siLocal")
         # save attributes
         self.input["anim"] = (anim_root.anim, anim_upv.anim, anim_eff.anim)
 
@@ -49,6 +49,7 @@ class IK(Base):
         first_bone = root.Bones(0)
         args = (first_bone.FullName, self.input["anim"][1].FullName)
         si.ApplyOp("SkeletonUpVector", "{0};{1}".format(*args))
+        first_bone.Properties("Kinematic Joint").Parameters("roll").Value = 180
         # stretching
         kwds = {"root": self.input["anim"][0].FullName,
                 "eff": self.input["anim"][-1].FullName,
@@ -57,13 +58,10 @@ class IK(Base):
         expr = "COND({stretch} == 1, MAX(ctr_dist({root}., {eff}.) / {total_length}, 1), 1)"
         expr = expr.format(**kwds)
         first_bone.Kinematics.Local.Parameters("sclx").AddExpression(expr)
-        # update object members
-        self.output["snap_ref"] = [self.input.get("skeleton")[0],
-                                   self.input.get("skeleton")[0],
-                                   self.input.get("skeleton")[-1]]
-
-    def validate(self):
-        return len(self.input.get("skeleton")) > 2
+        # set snap reference
+        Manipulator(self.input["anim"][0]).snap_ref(self.input["skeleton"][0])
+        Manipulator(self.input["anim"][1]).snap_ref(self.input["skeleton"][0])
+        Manipulator(self.input["anim"][2]).snap_ref(self.input["skeleton"][-1])
 
     def _ikchain(self):
         root = bonetools.curve2chain(self.helper.get("curve"),
@@ -77,3 +75,7 @@ class IK(Base):
         self.helper.get("hidden").extend(list(root.Bones))
         self.helper.get("hidden").extend([root, root.Effector])
         return root
+
+    @staticmethod
+    def validate(skeleton):
+        return len(skeleton) > 2
