@@ -39,6 +39,7 @@ class FK(Base):
             self.output["tm"][i].Kinematics.AddConstraint("Pose", anim)
             # set snap reference
             Manipulator(anim).snap_ref(bone)
+        # Manipulator(self.input["anim"][0]).snap_ref(self.input["skeleton"][0])
 
     @staticmethod
     def validate(skeleton):

@@ -1,5 +1,6 @@
 from .fk import FK
 from .ik import IK
+from .splineik import SplineIK
 
 
 def from_manipulator(manipulator):

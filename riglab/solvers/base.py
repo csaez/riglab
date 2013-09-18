@@ -71,7 +71,10 @@ class Base(SIWrapper):
         self.pb.setValue(70)
         first = bonetools.deep(self.input["skeleton"][0])
         next = bonetools.deep(self.input["skeleton"][1])
-        (self.connect, self.connect_reverse)[int(first > next)]()
+        if first <= next:
+            self.connect()
+        else:
+            self.connect_reverse()
 
         # style
         self.pb.setLabelText("Styling")
@@ -93,18 +96,18 @@ class Base(SIWrapper):
         self.helper["hidden"].append(self.helper.get("curve"))
         self.custom_anim()
 
-    def connect(self):
+    def connect(self, compensate=True):
         for i, bone in enumerate(self.input.get("skeleton")[:-1]):
             target = self.output.get("tm")[i]
-            cns = bone.Kinematics.AddConstraint("Pose", target, True)
+            cns = bone.Kinematics.AddConstraint("Pose", target, compensate)
             for param in ("active", "blendweight"):
                 expr = self.input.get(param).FullName
                 cns.Parameters(param).AddExpression(expr)
 
-    def connect_reverse(self):
+    def connect_reverse(self, compensate=True):
         for i, bone in enumerate(self.input.get("skeleton")[1:]):
             target = self.output.get("tm")[i]
-            cns = bone.Kinematics.AddConstraint("Pose", target, True)
+            cns = bone.Kinematics.AddConstraint("Pose", target, compensate)
             for param in ("active", "blendweight"):
                 expr = self.input.get(param).FullName
                 cns.Parameters(param).AddExpression(expr)
