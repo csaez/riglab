@@ -52,18 +52,17 @@ class SplineIK(Base):
         conn = ";".join([x.FullName for x in self.input["anim"]])
         ICEOp = si.ApplyICEOp(cmp_file, self.helper["ICERig"], conn)
         # set compound data
-        l = self.helper["bezier"].ActivePrimitive.Geometry.Curves(0).Length
-        siget("{}.riglab__SplineIKSolver.Original_Length".format(
-            ICEOp.FullName)).Value = l
-        size = len(self.input["skeleton"])
-        siget("{}.riglab__SplineIKSolver.Size".format(
-            ICEOp.FullName)).Value = size
+        compound = "{}.riglab__SplineIKSolver".format(ICEOp.FullName)
+        curve_geo = self.helper["bezier"].ActivePrimitive.Geometry.Curves(0)
+        siget(compound + ".Original_Length").Value = curve_geo.Length
+        siget(compound + ".Size").Value = len(self.input["skeleton"])
         # apply transform
         cmp_file = os.path.join(cmp_dir, "riglab__ApplyTransform.xsicompound")
         for i, bone in enumerate(self.output["tm"]):
             ICEOp = si.ApplyICEOp(cmp_file, bone,
                                   self.helper["ICERig"].FullName)
-            siget("{}.riglab__ApplyTransform.Index".format(ICEOp.FullName)).Value = i
+            param = "{}.riglab__ApplyTransform.Index".format(ICEOp.FullName)
+            siget(param).Value = i
 
     def connect(self):
         super(SplineIK, self).connect(compensate=False)

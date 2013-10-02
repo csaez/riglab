@@ -40,12 +40,6 @@ rigs via the python API (this is also important for animation tools).
 reuse any previous configuration without a single line of code (sort of
 autorigs for free).
 
-- **Performance**: There's a balance between management and performance, one
-of the goals of RigLab is implement a rig compiler. This allows split the
-rig into a source rig (a layered rig and a nice inner structure for
-debugging and management) and an animation rig (optimized hierarchies for
-performance).
-
 - **Pipeline friendly**: Riglab is highly customizable; names, shapes, solvers
 and almost every component is selected from a customizable library, lots
 of configuration files (JSON) with default values that make sense.
