@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>274</width>
+    <height>450</height>
+   </rect>
+  </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::CustomContextMenu</enum>
+  </property>
+  <property name="windowTitle">
+   <string>RigLab Editor</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTreeWidget" name="stack">
+      <property name="dragEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>32</width>
+        <height>32</height>
+       </size>
+      </property>
+      <attribute name="headerDefaultSectionSize">
+       <number>150</number>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>Name</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>State</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>274</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="behaviourMenu">
+    <property name="title">
+     <string>Behaviours</string>
+    </property>
+    <widget class="QMenu" name="addBehaviour">
+     <property name="title">
+      <string>Add</string>
+     </property>
+     <addaction name="addFK"/>
+     <addaction name="addIK"/>
+     <addaction name="separator"/>
+     <addaction name="addSplineIK"/>
+    </widget>
+    <addaction name="addBehaviour"/>
+    <addaction name="separator"/>
+    <addaction name="removeBehaviour"/>
+    <addaction name="editBehaviour"/>
+   </widget>
+   <widget class="QMenu" name="rigMenu">
+    <property name="title">
+     <string>Rig</string>
+    </property>
+    <widget class="QMenu" name="activeRig">
+     <property name="title">
+      <string>ActiveRig</string>
+     </property>
+     <addaction name="newRig"/>
+     <addaction name="separator"/>
+    </widget>
+    <widget class="QMenu" name="modeMenu">
+     <property name="title">
+      <string>Mode</string>
+     </property>
+     <addaction name="deformationMode"/>
+     <addaction name="riggingMode"/>
+     <addaction name="separator"/>
+     <addaction name="savePose"/>
+    </widget>
+    <addaction name="activeRig"/>
+    <addaction name="separator"/>
+    <addaction name="modeMenu"/>
+    <addaction name="editSkeleton"/>
+   </widget>
+   <widget class="QMenu" name="groupMenu">
+    <property name="title">
+     <string>Groups</string>
+    </property>
+    <widget class="QMenu" name="templateMenu">
+     <property name="title">
+      <string>Templates</string>
+     </property>
+     <addaction name="loadTemplate"/>
+     <addaction name="saveTemplate"/>
+    </widget>
+    <widget class="QMenu" name="stateMenu">
+     <property name="title">
+      <string>States</string>
+     </property>
+     <addaction name="addState"/>
+     <addaction name="removeState"/>
+    </widget>
+    <addaction name="templateMenu"/>
+    <addaction name="separator"/>
+    <addaction name="addGroup"/>
+    <addaction name="removeGroup"/>
+    <addaction name="defaultGroup"/>
+    <addaction name="stateMenu"/>
+   </widget>
+   <addaction name="rigMenu"/>
+   <addaction name="groupMenu"/>
+   <addaction name="behaviourMenu"/>
+  </widget>
+  <action name="actionAdd_Group">
+   <property name="text">
+    <string>Add Group</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="addFK">
+   <property name="text">
+    <string>FK</string>
+   </property>
+  </action>
+  <action name="addIK">
+   <property name="text">
+    <string>IK</string>
+   </property>
+  </action>
+  <action name="addSplineIK">
+   <property name="text">
+    <string>Spline IK</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="actionCharacter_A">
+   <property name="text">
+    <string>Character A</string>
+   </property>
+  </action>
+  <action name="actionCharacter_B">
+   <property name="text">
+    <string>Character B</string>
+   </property>
+  </action>
+  <action name="actionCharacter_C">
+   <property name="text">
+    <string>Character C</string>
+   </property>
+  </action>
+  <action name="newRig">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="actionCharacter_A_2">
+   <property name="text">
+    <string>Character A</string>
+   </property>
+  </action>
+  <action name="actionCharacter_B_2">
+   <property name="text">
+    <string>Character B</string>
+   </property>
+  </action>
+  <action name="addGroup">
+   <property name="text">
+    <string>Add</string>
+   </property>
+  </action>
+  <action name="removeGroup">
+   <property name="text">
+    <string>Remove</string>
+   </property>
+  </action>
+  <action name="actionLoad_State">
+   <property name="text">
+    <string>Load State</string>
+   </property>
+  </action>
+  <action name="saveState">
+   <property name="text">
+    <string>Save as...</string>
+   </property>
+  </action>
+  <action name="loadState">
+   <property name="text">
+    <string>Load template</string>
+   </property>
+  </action>
+  <action name="removeBehaviour">
+   <property name="text">
+    <string>Remove</string>
+   </property>
+  </action>
+  <action name="editBehaviour">
+   <property name="text">
+    <string>Edit</string>
+   </property>
+  </action>
+  <action name="manageState">
+   <property name="text">
+    <string>Manage</string>
+   </property>
+  </action>
+  <action name="loadTemplate">
+   <property name="text">
+    <string>Load</string>
+   </property>
+  </action>
+  <action name="saveTemplate">
+   <property name="text">
+    <string>Save as...</string>
+   </property>
+  </action>
+  <action name="save">
+   <property name="text">
+    <string>Save as...</string>
+   </property>
+  </action>
+  <action name="removeState">
+   <property name="text">
+    <string>Remove</string>
+   </property>
+  </action>
+  <action name="addState">
+   <property name="text">
+    <string>Save as...</string>
+   </property>
+  </action>
+  <action name="editSkeleton">
+   <property name="text">
+    <string>Set Skeleton</string>
+   </property>
+  </action>
+  <action name="deformationMode">
+   <property name="text">
+    <string>Deformation</string>
+   </property>
+  </action>
+  <action name="riggingMode">
+   <property name="text">
+    <string>Rigging</string>
+   </property>
+  </action>
+  <action name="savePose">
+   <property name="text">
+    <string>Save current pose as...</string>
+   </property>
+  </action>
+  <action name="defaultGroup">
+   <property name="text">
+    <string>Set default</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>stack_contextmenu(qpoint)</slot>
+ </slots>
+</ui>
