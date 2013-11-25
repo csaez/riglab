@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>274</width>
-    <height>450</height>
+    <height>451</height>
    </rect>
   </property>
   <property name="contextMenuPolicy">
@@ -28,6 +28,9 @@
         <width>32</width>
         <height>32</height>
        </size>
+      </property>
+      <property name="expandsOnDoubleClick">
+       <bool>false</bool>
       </property>
       <attribute name="headerDefaultSectionSize">
        <number>150</number>
@@ -61,7 +64,7 @@
     </property>
     <widget class="QMenu" name="addBehaviour">
      <property name="title">
-      <string>Add</string>
+      <string>New</string>
      </property>
      <addaction name="addFK"/>
      <addaction name="addIK"/>
@@ -69,9 +72,7 @@
      <addaction name="addSplineIK"/>
     </widget>
     <addaction name="addBehaviour"/>
-    <addaction name="separator"/>
     <addaction name="removeBehaviour"/>
-    <addaction name="editBehaviour"/>
    </widget>
    <widget class="QMenu" name="rigMenu">
     <property name="title">
@@ -106,8 +107,11 @@
      <property name="title">
       <string>Templates</string>
      </property>
-     <addaction name="loadTemplate"/>
      <addaction name="saveTemplate"/>
+     <addaction name="loadTemplate"/>
+     <addaction name="separator"/>
+     <addaction name="copyTemplate"/>
+     <addaction name="pasteTemplate"/>
     </widget>
     <widget class="QMenu" name="stateMenu">
      <property name="title">
@@ -116,12 +120,11 @@
      <addaction name="addState"/>
      <addaction name="removeState"/>
     </widget>
-    <addaction name="templateMenu"/>
+    <addaction name="stateMenu"/>
     <addaction name="separator"/>
+    <addaction name="templateMenu"/>
     <addaction name="addGroup"/>
     <addaction name="removeGroup"/>
-    <addaction name="defaultGroup"/>
-    <addaction name="stateMenu"/>
    </widget>
    <addaction name="rigMenu"/>
    <addaction name="groupMenu"/>
@@ -194,7 +197,7 @@
   </action>
   <action name="addGroup">
    <property name="text">
-    <string>Add</string>
+    <string>New</string>
    </property>
   </action>
   <action name="removeGroup">
@@ -234,7 +237,7 @@
   </action>
   <action name="loadTemplate">
    <property name="text">
-    <string>Load</string>
+    <string>Load from...</string>
    </property>
   </action>
   <action name="saveTemplate">
@@ -279,7 +282,17 @@
   </action>
   <action name="defaultGroup">
    <property name="text">
-    <string>Set default</string>
+    <string>Set as default</string>
+   </property>
+  </action>
+  <action name="copyTemplate">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+  </action>
+  <action name="pasteTemplate">
+   <property name="text">
+    <string>Paste</string>
    </property>
   </action>
  </widget>

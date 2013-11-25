@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 from PyQt4 import QtCore, QtGui, uic
 from wishlib.qt.QtGui import QMainWindow
 
@@ -26,7 +27,7 @@ class Rig(object):
         self.name = name
         self.mode = 0  # {0: deformation, 1: rigging}
         self.groups = {}
-        self.add_group("default")
+        # self.add_group("default")
 
     def add_group(self, name):
         self.groups[name] = {"solvers": list(), "states": dict()}
@@ -63,6 +64,23 @@ class Rig(object):
                     del v["states"][name][solver.name]
                 solver.destroy()
 
+    def export_data(self, group_name):
+        if not self.groups.get(group_name):
+            return
+        data = {"solvers": list(), "states": dict()}
+        # serialize solver stack
+        for i, s in enumerate(self.groups[group_name]["solvers"]):
+            data["solvers"].append(s.data)
+        # copy states
+        data["states"] = self.groups[group_name]["states"].copy()
+        return data
+
+    def load_data(self, group_name, data):
+        self.add_group(group_name)
+        for d in data["solvers"]:
+            self.groups[group_name]["solvers"].append(Solver.from_data(d))
+        self.groups[group_name]["states"] = data["states"].copy()
+
 
 class Solver(object):
 
@@ -74,6 +92,16 @@ class Solver(object):
 
     def destroy(self):
         pass
+
+    @property
+    def data(self):
+        return {"name": self.name, "type": self.type, "state": self.state}
+
+    @classmethod
+    def from_data(cls, data):
+        s = cls(data["name"], data["type"])
+        s.state = data["state"]
+        return s
 
 
 class MyDelegate(QtGui.QItemDelegate):
@@ -87,7 +115,6 @@ class Manager(QMainWindow):
     MODES = ("Deformation", "Rigging")  # table matching Rig() indices
     IMAGES = {"check": "checkmark_icon&16.png",
               "group": "iconmonstr-folder-icon-256.png",
-              "active_group": "iconmonstr-bookmark-14-icon-256.png",
               "ik": "iconmonstr-backarrow-59-icon-256.png",
               "fk": "iconmonstr-arrow-59-icon-256.png",
               "splineik": "iconmonstr-sound-wave-4-icon-256.png"}
@@ -97,7 +124,8 @@ class Manager(QMainWindow):
     def __init__(self, parent=None):
         super(Manager, self).__init__(parent)
         self.riglab = RigLab()
-        self._MUTE = False
+        self._clipboard = None
+        self._mute = False
         self._index = -1
         self.initUI()
 
@@ -113,6 +141,7 @@ class Manager(QMainWindow):
         self.connect(self.ui.stack,
                      QtCore.SIGNAL("customContextMenuRequested(QPoint)"),
                      self.stack_contextmenu)
+        self.ui.stack.doubleClicked.connect(self.renameitem_clicked)
         # rig signals
         self.ui.rigMenu.aboutToShow.connect(self.reload_rigmenu)
         self.ui.newRig.triggered.connect(self.newrig_clicked)
@@ -121,9 +150,12 @@ class Manager(QMainWindow):
                 widget, QtCore.SIGNAL("triggered()"),
                 lambda v=i: setattr(self.active_rig, "mode", v))
         # group signals
+        self.ui.copyTemplate.triggered.connect(self.copytemplate_clicked)
+        self.ui.pasteTemplate.triggered.connect(self.pastetemplate_clicked)
         self.ui.addGroup.triggered.connect(self.addgroup_clicked)
-        self.ui.defaultGroup.triggered.connect(self.defaultgroup_clicked)
+        self.ui.removeGroup.triggered.connect(self.removegroup_clicked)
         self.ui.addState.triggered.connect(self.savestate_clicked)
+        self.ui.removeState.triggered.connect(self.removestate_clicked)
         # behaviour signals
         self.ui.addFK.triggered.connect(lambda: self.addsolver_clicked("fk"))
         self.ui.addIK.triggered.connect(lambda: self.addsolver_clicked("ik"))
@@ -135,58 +167,108 @@ class Manager(QMainWindow):
             0] if len(self.riglab.scene_rigs) else None
 
     # SLOTS
+    def renameitem_clicked(self, model_index):
+        item = self.ui.stack.currentItem()
+        current_name = str(item.text(0))
+        new_name, ok = QtGui.QInputDialog.getText(
+            self, "Rename item", "", text=current_name)
+        new_name = str(new_name)
+        if not ok and not len(new_name):
+            return
+        if item.parent() is None:  # group
+            self.active_rig.groups[
+                new_name] = self.active_rig.groups[current_name]
+            del self.active_rig.groups[current_name]
+        else:  # solver
+            s = self.get_solver(current_name, str(item.parent().text(0)))
+            s.name = new_name
+        self.reload_stack()
+
     def newrig_clicked(self):
-        print self._MUTE
-        if self._MUTE:
+        if self._mute:
             return
         name, ok = QtGui.QInputDialog.getText(self, "New Rig", "Rig name:")
         if not ok:
             return
         self.active_rig = self.riglab.add_rig(str(name))
 
+    def copytemplate_clicked(self):
+        if self._mute or not self.active_rig:
+            return
+        self._clipboard = self.active_rig.export_data(self.active_group)
+
+    def pastetemplate_clicked(self):
+        if self._mute or not self.active_rig or not self._clipboard:
+            return
+        self.active_rig.load_data(self.active_group, self._clipboard.copy())
+        self.reload_stack()
+
     def addgroup_clicked(self):
-        if self._MUTE:
+        if self._mute:
             return
         name, ok = QtGui.QInputDialog.getText(self, "Add Group", "Group name:")
         name = str(name)
         if not ok or not len(name):
             return
         self.active_rig.add_group(name)
-        self.active_group = name
+        self.reload_stack()
 
-    def defaultgroup_clicked(self):
-        if self._MUTE:
-            return
+    def removegroup_clicked(self):
         item = self.ui.stack.currentItem()
-        if item:
-            self.active_group = str(item.text(0))
+        if self._mute or item is None or item.parent() is not None:
+            return
+        grp_name = str(item.text(0))
+        if len(self.active_rig.groups[grp_name]["solvers"]):
+            msgbox = QtGui.QMessageBox(self)
+            msgbox.addButton(QtGui.QMessageBox.Yes)
+            msgbox.addButton(QtGui.QMessageBox.No)
+            msgbox.setText("The group isn't empty.\nDo you want to continue?")
+            msgbox.setIcon(QtGui.QMessageBox.Question)
+            if msgbox.exec_() == QtGui.QMessageBox.Yes:
+                for s in self.active_rig.groups[grp_name]["solvers"]:
+                    s.destroy()
+        del self.active_rig.groups[grp_name]
+        self.reload_stack()
 
     def savestate_clicked(self):
-        if self._MUTE or not len(self.active_rig.groups[self.active_group]["solvers"]):
+        if self._mute or not self.active_group or not len(self.active_rig.groups[self.active_group]["solvers"]):
             return
-        name, ok = QtGui.QInputDialog.getText(self, "Save state as...",
-                                              "State name:")
+        name, ok = QtGui.QInputDialog.getText(
+            self, "Save state as...", "State name:")
         name = str(name)
         if not ok or not len(name):
             return
         self.active_rig.save_state(self.active_group, name)
         self.reload_stack()
 
+    def removestate_clicked(self):
+        if self._mute or not self.active_rig or self.active_group is None:
+            return
+        states = self.active_rig.groups[self.active_group]["states"].keys()
+        if not len(states):
+            return
+        name, ok = QtGui.QInputDialog.getItem(
+            self, "Remove State", "States:", states, 0, False)
+        if not ok:
+            return
+        del self.active_rig.groups[self.active_group]["states"][str(name)]
+        self.reload_stack()
+
     def state_changed(self, name, group_name):
-        if self._MUTE:
+        if self._mute:
             return
         self.active_rig.apply_state(group_name, name)
         self.reload_stack()
 
     def addsolver_clicked(self, solver):
-        if self._MUTE:
+        if self._mute and self.active_group:
             return
         self.active_rig.add_solver(solver, self.active_group)
         self.reload_stack()
 
     def removesolver_clicked(self, solver=None):
         item = self.ui.stack.currentItem()
-        if self._MUTE or not item.parent():
+        if self._mute or item is None or item.parent() is None:
             return
         solver_name = str(item.text(0))
         group_name = str(item.parent().text(0))
@@ -195,7 +277,7 @@ class Manager(QMainWindow):
         self.reload_stack()
 
     def stack_changed(self, item, column):
-        if self._MUTE or item.childCount():
+        if self._mute or item.childCount():
             return
         self.ui.stack.itemChanged.connect
         solver_name = str(item.text(0))
@@ -203,19 +285,17 @@ class Manager(QMainWindow):
         solver.state = bool(item.checkState(column))
 
     def stack_contextmenu(self, pos):
-        item = self.ui.stack.itemAt(pos)
-        menu = self.ui.groupMenu
-        if not item or item.parent():
-            menu = self.ui.behaviourMenu
+        # show menubar as context menu
+        menu = self.ui.menubar.children()[-1]
         cursor = QtGui.QCursor.pos()
         menu.move(cursor.x(), cursor.y())
         menu.exec_()
 
     # UTILITY
     def reload_rigmenu(self):
-        self._MUTE = True
+        self._mute = True
         if not self.active_rig:
-            self._MUTE = False
+            self._mute = False
             return
         # add scene rigs
         action_names = [str(a.text()) for a in self.ui.activeRig.actions()]
@@ -233,10 +313,10 @@ class Manager(QMainWindow):
         for action in self.ui.modeMenu.actions():
             index = int(str(action.text()) != self.MODES[self.active_rig.mode])
             action.setIcon(ICONS[index])
-        self._MUTE = False
+        self._mute = False
 
     def reload_stack(self):
-        self._MUTE = True
+        self._mute = True
         ICON = lambda x: QtGui.QIcon(self.IMAGES.get(x))
         # store view config
         config = [(self.ui.stack.topLevelItem(i).text(0),
@@ -248,8 +328,8 @@ class Manager(QMainWindow):
         for group_name, v in self.active_rig.groups.iteritems():
             # add groups
             group = QtGui.QTreeWidgetItem((group_name, ))
-            index = int(group_name == self.active_group)
-            group.setIcon(0, ICON(("group", "active_group")[index]))
+            # index = int(group_name == self.active_group)
+            group.setIcon(0, ICON("group"))
             self.ui.stack.addTopLevelItem(group)
             # add state combobox
             state = QtGui.QComboBox()
@@ -272,7 +352,7 @@ class Manager(QMainWindow):
                     continue
                 item.setExpanded(value[1])
                 self.ui.stack.itemWidget(item, 1).setCurrentIndex(value[2])
-        self._MUTE = False
+        self._mute = False
 
     def disable_gui(self, value):
         widgets = (self.ui.stack, self.ui.groupMenu,
@@ -302,16 +382,12 @@ class Manager(QMainWindow):
 
     @property
     def active_group(self):
-        if self.active_rig:
-            if hasattr(self.active_rig, "_active_group"):
-                return self.active_rig._active_group
-            return self.active_rig.groups.keys()[0]
+        item = self.ui.stack.currentItem()
+        if self.active_rig and item:
+            if item.parent() is not None:
+                item = item.parent()
+            return str(item.text(0))
         return None
-
-    @active_group.setter
-    def active_group(self, value):
-        self.active_rig._active_group = value  # monkey patch the active group
-        self.reload_stack()
 
 
 if __name__ == "__main__":
