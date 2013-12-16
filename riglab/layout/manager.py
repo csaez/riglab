@@ -286,8 +286,17 @@ class Manager(QMainWindow):
         solver.state = bool(item.checkState(column))
 
     def stack_contextmenu(self, pos):
+        # filter context using selection
+        # if click on nothing then show the entire thing,
+        # otherwise show group or behaviour.
+        item = self.ui.stack.itemAt(pos)
+        if item is None:
+            menu = self.ui.menubar.children()[-1]
+        elif item.parent():  # if it has parent then is a behaviour
+            menu = self.ui.behaviourMenu
+        else:
+            menu = self.ui.groupMenu
         # show menubar as context menu
-        menu = self.ui.menubar.children()[-1]
         cursor = QtGui.QCursor.pos()
         menu.move(cursor.x(), cursor.y())
         menu.exec_()
