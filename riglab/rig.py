@@ -45,7 +45,8 @@ class Rig(SIWrapper):
         self.name = self.obj.Name
 
     def add_group(self, name):
-        self.groups[name] = {"solvers": list(), "states": dict(), "active": None}
+        self.groups[name] = {
+            "solvers": list(), "states": dict(), "active": None}
         self.update()
 
     def remove_group(self, name):
@@ -57,6 +58,29 @@ class Rig(SIWrapper):
             del self.solvers[solver_name]
         del self.groups[name]
         self.update()
+
+    def get_skeleton(self, group_name):
+        if not self.groups.get(group_name):
+            return
+        skel = self.collect_data_solver(
+            group_name, lambda x: x.input["skeleton"])
+        skel = set([x.FullName for x in skel])  # remove duplicates
+        return [siget(x) for x in skel]
+
+    def get_anim(self, group_name):
+        if not self.groups.get(group_name):
+            return
+        anim = self.collect_data_solver(group_name, lambda x: x.input["anim"])
+        anim = set([x.FullName for x in anim])  # remove duplicates
+        return [siget(x) for x in anim]
+
+    def collect_data_solver(self, group_name, query_function):
+        """Utility function used to collect solver data in a group"""
+        data = list()
+        for solver_name in self.groups[group_name]["solvers"]:
+            solver = self.get_solver(solver_name)
+            data.extend(query_function(solver))
+        return data
 
     def add_solver(self, solver_type, group_name):
         if self.groups.get(group_name) is None or not hasattr(solvers, solver_type) or not sisel.Count:
@@ -75,7 +99,8 @@ class Rig(SIWrapper):
         # add solver
         solver_name = self.unique_name(solver_type)
         solver_class = getattr(solvers, solver_type)
-        solver = solver_class.new(skeleton, solver_name, self.holders["solvers"])
+        solver = solver_class.new(
+            skeleton, solver_name, self.holders["solvers"])
         self.solvers[solver.name] = solver.obj  # save solver root
         # groups
         self.groups[group_name]["solvers"].append(solver.name)

@@ -68,6 +68,9 @@ class Manager(QMainWindow):
         self.ui.addState.triggered.connect(self.savestate_clicked)
         self.ui.removeState.triggered.connect(self.removestate_clicked)
         self.ui.autoSnap.triggered.connect(self.autosnap_clicked)
+        self.ui.groupSkeleton.triggered.connect(self.groupSkeleton_clicked)
+        self.ui.groupManipulators.triggered.connect(
+            self.groupManipulators_clicked)
         # behaviour signals
         self.ui.addFK.triggered.connect(lambda: self.addsolver_clicked("FK"))
         self.ui.addIK.triggered.connect(lambda: self.addsolver_clicked("IK"))
@@ -76,6 +79,9 @@ class Manager(QMainWindow):
         self.ui.removeBehaviour.triggered.connect(self.removesolver_clicked)
         self.ui.snap.triggered.connect(self.snapsolver_clicked)
         self.ui.inspect.triggered.connect(self.inspectsolver_clicked)
+        self.ui.solverSkeleton.triggered.connect(self.solverSkeleton_clicked)
+        self.ui.solverManipulators.triggered.connect(
+            self.solverManipulators_clicked)
         # extras signals
         self.ui.namingConvention.triggered.connect(
             lambda: show_qt(naming.editor.Editor))
@@ -215,6 +221,18 @@ class Manager(QMainWindow):
         self.active_rig.apply_state(group_name, name)
         self.reload_stack()
 
+    def groupSkeleton_clicked(self):
+        item = self.ui.stack.currentItem()
+        if self._mute or item is None or item.parent() is not None:
+            return
+        si.SelectObj(self.active_rig.get_skeleton(str(item.text(0))))
+
+    def groupManipulators_clicked(self):
+        item = self.ui.stack.currentItem()
+        if self._mute or item is None or item.parent() is not None:
+            return
+        si.SelectObj(self.active_rig.get_anim(str(item.text(0))))
+
     def addsolver_clicked(self, solver):
         if self._mute and self.active_group:
             return
@@ -244,6 +262,20 @@ class Manager(QMainWindow):
         param = self.active_rig.get_solver(solver_name).input.get("parameters")
         if param:
             si.InspectObj(param)
+
+    def solverSkeleton_clicked(self):
+        item = self.ui.stack.currentItem()
+        if self._mute or item is None or item.parent() is None:
+            return
+        solver = self.active_rig.get_solver(str(item.text(0)))
+        si.SelectObj(solver.input["skeleton"])
+
+    def solverManipulators_clicked(self):
+        item = self.ui.stack.currentItem()
+        if self._mute or item is None or item.parent() is None:
+            return
+        solver = self.active_rig.get_solver(str(item.text(0)))
+        si.SelectObj(solver.input["anim"])
 
     def stack_changed(self, item, column):
         if self._mute or item.childCount():

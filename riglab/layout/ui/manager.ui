@@ -74,8 +74,10 @@
     <addaction name="addBehaviour"/>
     <addaction name="removeBehaviour"/>
     <addaction name="separator"/>
-    <addaction name="snap"/>
     <addaction name="inspect"/>
+    <addaction name="solverManipulators"/>
+    <addaction name="solverSkeleton"/>
+    <addaction name="snap"/>
    </widget>
    <widget class="QMenu" name="rigMenu">
     <property name="title">
@@ -111,11 +113,11 @@
      <property name="title">
       <string>Templates</string>
      </property>
-     <addaction name="saveTemplate"/>
-     <addaction name="loadTemplate"/>
-     <addaction name="separator"/>
      <addaction name="copyTemplate"/>
      <addaction name="pasteTemplate"/>
+     <addaction name="separator"/>
+     <addaction name="saveTemplate"/>
+     <addaction name="loadTemplate"/>
     </widget>
     <widget class="QMenu" name="stateMenu">
      <property name="title">
@@ -128,9 +130,12 @@
     </widget>
     <addaction name="templateMenu"/>
     <addaction name="separator"/>
-    <addaction name="stateMenu"/>
     <addaction name="addGroup"/>
     <addaction name="removeGroup"/>
+    <addaction name="stateMenu"/>
+    <addaction name="separator"/>
+    <addaction name="groupManipulators"/>
+    <addaction name="groupSkeleton"/>
    </widget>
    <widget class="QMenu" name="extrasMenu">
     <property name="title">
@@ -356,6 +361,26 @@
   <action name="docs">
    <property name="text">
     <string>Documentation</string>
+   </property>
+  </action>
+  <action name="groupSkeleton">
+   <property name="text">
+    <string>Select Skeleton</string>
+   </property>
+  </action>
+  <action name="groupManipulators">
+   <property name="text">
+    <string>Select Manipulators</string>
+   </property>
+  </action>
+  <action name="solverSkeleton">
+   <property name="text">
+    <string>Select Skeleton</string>
+   </property>
+  </action>
+  <action name="solverManipulators">
+   <property name="text">
+    <string>Select Manipulators</string>
    </property>
   </action>
  </widget>
