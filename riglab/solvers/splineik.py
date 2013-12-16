@@ -13,7 +13,7 @@ class SplineIK(Base):
         p0.owner = {"obj": self.obj, "class": self.classname}
         p1, p2, p3 = p0.duplicate(3)  # OPTIMIZATION
         for i, ctrl in enumerate((p0, p1, p2, p3)):
-            ctrl.rename(self.solvername, i)
+            ctrl.rename(self.name, i)
             if 0 < i < 3:
                 ctrl.icon.size = 0.25
                 continue
@@ -29,7 +29,7 @@ class SplineIK(Base):
         op = si.ApplyGenOp("CrvFit", "", self.helper["curve"])(0)
         op.Parameters("points").Value = 1
         self.helper["bezier"] = op.Parent3DObject
-        self.helper["bezier"].Name = self.nm.qn(self.solvername, "bezierCurve")
+        self.helper["bezier"].Name = self.nm.qn(self.name, "bezierCurve")
         self.helper["root"].AddChild(self.helper["bezier"])
         self.helper["hidden"].append(self.helper.get("bezier"))
         pts = self.helper["bezier"].ActivePrimitive.Geometry.Points

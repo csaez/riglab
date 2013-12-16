@@ -132,3 +132,21 @@ class Manager(object):
             if token_name in name:
                 raise AttributeError("{} not found".format(token_name))
         return name
+
+    def decompose(self, name, rule):
+        if not self.rules.get(rule) or "_" not in name:
+            return None
+        names = name.split("_")
+        token_names = self.rules.get(rule).split("_")
+        data = dict()
+        for i, x in enumerate(token_names):
+            token = self.tokens.get(x)
+            if not token:
+                continue
+            if hasattr(token, "values"):
+                for k, v in token.values.iteritems():
+                    if v == unicode(names[i]):
+                        data[x] = k
+            else:
+                data[x] = token.get(names[i])
+        return data

@@ -27,7 +27,7 @@ class FK(Base):
             m.icon.sclx = length
         # rename
         for i, each in enumerate(anim):
-            each.rename(self.solvername, i)
+            each.rename(self.name, i)
             self.input.get("anim").append(each.anim)
             self.helper.get("hidden").extend([each.zero, each.space])
         self.input["anim"] = [x.anim for x in anim]

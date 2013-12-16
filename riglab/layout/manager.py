@@ -1,107 +1,13 @@
 import os
 import sys
 import json
+import webbrowser
 from PyQt4 import QtCore, QtGui, uic
 from wishlib.qt.QtGui import QMainWindow
-
-
-class RigLab(object):
-
-    def __init__(self):
-        super(RigLab, self).__init__()
-        self.scene_rigs = list()
-
-    def add_rig(self, name):
-        rig = Rig.new(name)
-        self.scene_rigs.append(rig)
-        return rig
-
-
-class Rig(object):
-
-    @classmethod
-    def new(cls, name):
-        return cls(name)
-
-    def __init__(self, name):
-        self.name = name
-        self.mode = 0  # {0: deformation, 1: rigging}
-        self.groups = {}
-        # self.add_group("default")
-
-    def add_group(self, name):
-        self.groups[name] = {"solvers": list(), "states": dict()}
-
-    def add_solver(self, solver_type, group_name):
-        if self.groups.get(group_name) is None:
-            return
-        s = Solver(solver_type, solver_type)
-        self.groups[group_name]["solvers"].append(s)
-        return s
-
-    def save_state(self, group_name, name):
-        grp = self.groups.get(group_name)
-        if grp is None:
-            return
-        data = {}
-        for s in grp["solvers"]:
-            data[s.name] = s.state
-        grp["states"][name] = data
-
-    def apply_state(self, group_name, name):
-        grp = self.groups.get(group_name)
-        if not grp or not grp["states"].get(name):
-            return
-        for k, v in grp["states"][name].iteritems():
-            solver = [x for x in grp["solvers"] if x.name == k][0]
-            solver.state = v
-
-    def remove_solver(self, solver):
-        for k, v in self.groups.iteritems():
-            if solver in v["solvers"]:
-                v["solvers"] = [x for x in v["solvers"] if x != solver]
-                for name, state in v["states"].iteritems():
-                    del v["states"][name][solver.name]
-                solver.destroy()
-
-    def export_data(self, group_name):
-        if not self.groups.get(group_name):
-            return
-        data = {"solvers": list(), "states": dict()}
-        # serialize solver stack
-        for i, s in enumerate(self.groups[group_name]["solvers"]):
-            data["solvers"].append(s.data)
-        # copy states
-        data["states"] = self.groups[group_name]["states"].copy()
-        return data
-
-    def load_data(self, group_name, data):
-        self.add_group(group_name)
-        for d in data["solvers"]:
-            self.groups[group_name]["solvers"].append(Solver.from_data(d))
-        self.groups[group_name]["states"] = data["states"].copy()
-
-
-class Solver(object):
-
-    def __init__(self, solver_name, solver_type):
-        super(Solver, self).__init__()
-        self.name = solver_name
-        self.type = solver_type
-        self.state = True
-
-    def destroy(self):
-        pass
-
-    @property
-    def data(self):
-        return {"name": self.name, "type": self.type, "state": self.state}
-
-    @classmethod
-    def from_data(cls, data):
-        s = cls(data["name"], data["type"])
-        s.state = data["state"]
-        return s
+from wishlib.si import si, sisel, show_qt
+from .. import riglab
+from .. import naming
+from rigicon.layout.library_gui import RigIconLibrary
 
 
 class MyDelegate(QtGui.QItemDelegate):
@@ -113,7 +19,7 @@ class MyDelegate(QtGui.QItemDelegate):
 class Manager(QMainWindow):
 
     MODES = ("Deformation", "Rigging")  # table matching Rig() indices
-    IMAGES = {"check": "checkmark_icon&16.png",
+    IMAGES = {"check": "iconmonstr-check-mark-icon-256.png",
               "group": "iconmonstr-folder-icon-256.png",
               "ik": "iconmonstr-backarrow-59-icon-256.png",
               "fk": "iconmonstr-arrow-59-icon-256.png",
@@ -123,11 +29,13 @@ class Manager(QMainWindow):
 
     def __init__(self, parent=None):
         super(Manager, self).__init__(parent)
-        self.riglab = RigLab()
+        self.riglab = riglab.RigLab()
         self._clipboard = None
         self._mute = False
         self._index = -1
+        self.autosnap = False
         self.initUI()
+        self.autosnap_clicked()
 
     def initUI(self):
         ui_dir = os.path.join(os.path.dirname(__file__), "ui")
@@ -148,7 +56,10 @@ class Manager(QMainWindow):
         for i, widget in enumerate((self.ui.deformationMode, self.ui.riggingMode)):
             QtCore.QObject.connect(
                 widget, QtCore.SIGNAL("triggered()"),
-                lambda v=i: setattr(self.active_rig, "mode", v))
+                lambda v=i: self.mode_changed(v))
+        self.ui.savePose.triggered.connect(lambda: self.active_rig.save_pose())
+        self.ui.setSkeleton.triggered.connect(self.setSkeleton_clicked)
+        self.ui.setMeshes.triggered.connect(self.setMeshes_clicked)
         # group signals
         self.ui.copyTemplate.triggered.connect(self.copytemplate_clicked)
         self.ui.pasteTemplate.triggered.connect(self.pastetemplate_clicked)
@@ -156,12 +67,22 @@ class Manager(QMainWindow):
         self.ui.removeGroup.triggered.connect(self.removegroup_clicked)
         self.ui.addState.triggered.connect(self.savestate_clicked)
         self.ui.removeState.triggered.connect(self.removestate_clicked)
+        self.ui.autoSnap.triggered.connect(self.autosnap_clicked)
         # behaviour signals
-        self.ui.addFK.triggered.connect(lambda: self.addsolver_clicked("fk"))
-        self.ui.addIK.triggered.connect(lambda: self.addsolver_clicked("ik"))
+        self.ui.addFK.triggered.connect(lambda: self.addsolver_clicked("FK"))
+        self.ui.addIK.triggered.connect(lambda: self.addsolver_clicked("IK"))
         self.ui.addSplineIK.triggered.connect(
-            lambda: self.addsolver_clicked("splineik"))
+            lambda: self.addsolver_clicked("SplineIK"))
         self.ui.removeBehaviour.triggered.connect(self.removesolver_clicked)
+        self.ui.snap.triggered.connect(self.snapsolver_clicked)
+        self.ui.inspect.triggered.connect(self.inspectsolver_clicked)
+        # extras signals
+        self.ui.namingConvention.triggered.connect(
+            lambda: show_qt(naming.editor.Editor))
+        self.ui.rigiconLibrary.triggered.connect(
+            lambda: show_qt(RigIconLibrary))
+        self.ui.docs.triggered.connect(
+            lambda: webbrowser.open("https://github.com/csaez/riglab", new=2))
         # set active rig
         self.active_rig = self.riglab.scene_rigs[
             0] if len(self.riglab.scene_rigs) else None
@@ -180,7 +101,14 @@ class Manager(QMainWindow):
                 new_name] = self.active_rig.groups[current_name]
             del self.active_rig.groups[current_name]
         else:  # solver
-            s = self.get_solver(current_name, str(item.parent().text(0)))
+            grp_name = str(item.parent().text(0))
+            s = self.active_rig.get_solver(current_name)
+            # update states
+            for k, v in self.active_rig.groups[grp_name]["states"].iteritems():
+                if not v.get(s.name):
+                    continue
+                v[new_name] = v[s.name]
+            # rename
             s.name = new_name
         self.reload_stack()
 
@@ -191,6 +119,23 @@ class Manager(QMainWindow):
         if not ok:
             return
         self.active_rig = self.riglab.add_rig(str(name))
+
+    def mode_changed(self, index):
+        if self._mute or not self.active_rig:
+            return
+        self.active_rig.mode = index
+
+    def setSkeleton_clicked(self):
+        if self._mute or not self.active_rig:
+            return
+        self.active_rig.skeleton = sisel
+        for i in range(2):
+            self.active_rig.save_pose(i)
+
+    def setMeshes_clicked(self):
+        if self._mute or not self.active_rig:
+            return
+        self.active_rig.meshes = sisel
 
     def copytemplate_clicked(self):
         if self._mute or not self.active_rig:
@@ -224,10 +169,9 @@ class Manager(QMainWindow):
             msgbox.addButton(QtGui.QMessageBox.No)
             msgbox.setText("The group isn't empty.\nDo you want to continue?")
             msgbox.setIcon(QtGui.QMessageBox.Question)
-            if msgbox.exec_() == QtGui.QMessageBox.Yes:
-                for s in self.active_rig.groups[grp_name]["solvers"]:
-                    s.destroy()
-        del self.active_rig.groups[grp_name]
+            if msgbox.exec_() == QtGui.QMessageBox.No:
+                return
+        self.active_rig.remove_group(grp_name)
         self.reload_stack()
 
     def savestate_clicked(self):
@@ -254,9 +198,20 @@ class Manager(QMainWindow):
         del self.active_rig.groups[self.active_group]["states"][str(name)]
         self.reload_stack()
 
+    def autosnap_clicked(self):
+        self.autosnap = not self.autosnap
+        icon = (QtGui.QIcon(), QtGui.QIcon(self.IMAGES.get("check")))
+        self.ui.autoSnap.setIcon(icon[int(self.autosnap)])
+
     def state_changed(self, name, group_name):
         if self._mute:
             return
+        if self.autosnap:
+            solvers = [self.active_rig.get_solver(solver_name)
+                       for solver_name in self.active_rig.groups[group_name]["solvers"]]
+            for solver in solvers:
+                if not solver.state:
+                    solver.snap()
         self.active_rig.apply_state(group_name, name)
         self.reload_stack()
 
@@ -271,17 +226,31 @@ class Manager(QMainWindow):
         if self._mute or item is None or item.parent() is None:
             return
         solver_name = str(item.text(0))
-        group_name = str(item.parent().text(0))
-        solver = self.get_solver(solver_name, group_name)
-        self.active_rig.remove_solver(solver)
+        self.active_rig.remove_solver(solver_name)
         self.reload_stack()
+
+    def snapsolver_clicked(self):
+        item = self.ui.stack.currentItem()
+        if self._mute or item is None or item.parent() is None:
+            return
+        solver_name = str(item.text(0))
+        self.active_rig.get_solver(solver_name).snap()
+
+    def inspectsolver_clicked(self):
+        item = self.ui.stack.currentItem()
+        if self._mute or item is None or item.parent() is None:
+            return
+        solver_name = str(item.text(0))
+        param = self.active_rig.get_solver(solver_name).input.get("parameters")
+        if param:
+            si.InspectObj(param)
 
     def stack_changed(self, item, column):
         if self._mute or item.childCount():
             return
         self.ui.stack.itemChanged.connect
         solver_name = str(item.text(0))
-        solver = self.get_solver(solver_name, self.active_group)
+        solver = self.active_rig.get_solver(solver_name)
         solver.state = bool(item.checkState(column))
 
     def stack_contextmenu(self, pos):
@@ -332,16 +301,24 @@ class Manager(QMainWindow):
             group.setIcon(0, ICON("group"))
             self.ui.stack.addTopLevelItem(group)
             # add state combobox
-            state = QtGui.QComboBox()
-            state.addItems(self.active_rig.groups[group_name]["states"].keys())
+            states = self.active_rig.groups[group_name]["states"].keys()
+            s = QtGui.QComboBox()
+            s.addItems(states)
             QtCore.QObject.connect(
-                state, QtCore.SIGNAL("currentIndexChanged(QString)"),
+                s, QtCore.SIGNAL("currentIndexChanged(QString)"),
                 lambda v, g=group_name: self.state_changed(str(v), g))
-            self.ui.stack.setItemWidget(group, 1, state)
+            self.ui.stack.setItemWidget(group, 1, s)
+            active_state = self.active_rig.groups[group_name].get("active")
+            if active_state:
+                try:
+                    s.setCurrentIndex(states.index(active_state))
+                except ValueError:
+                    pass
             # add solver
-            for solver in v["solvers"]:
+            for solver_name in v["solvers"]:
+                solver = self.active_rig.get_solver(solver_name)
                 s = QtGui.QTreeWidgetItem((solver.name, ""))
-                s.setIcon(0, ICON(solver.type.lower()))
+                s.setIcon(0, ICON(solver.classname.lower()))
                 group.addChild(s)
                 s.setCheckState(1, 2 if solver.state else 0)
         # restore view config (by name)
@@ -356,17 +333,10 @@ class Manager(QMainWindow):
 
     def disable_gui(self, value):
         widgets = (self.ui.stack, self.ui.groupMenu,
-                   self.ui.behaviourMenu, self.ui.editSkeleton, self.ui.modeMenu)
+                   self.ui.behaviourMenu, self.ui.setSkeleton,
+                   self.ui.setMeshes, self.ui.modeMenu)
         for w in widgets:
             w.setEnabled(value)
-
-    def get_solver(self, solver_name, group_name):
-        grp = self.active_rig.groups.get(group_name)
-        if grp:
-            s = [x for x in grp["solvers"] if x.name == solver_name]
-            if len(s):
-                return s[0]
-        return None
 
     @property
     def active_rig(self):

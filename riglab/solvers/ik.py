@@ -25,7 +25,7 @@ class IK(Base):
         anim_upv.icon.size = 0.25
         anim_upv.icon.connect = self.input.get("skeleton")[1]
         for i, ctrl in enumerate((anim_root, anim_upv, anim_eff)):
-            ctrl.rename(self.solvername, i)
+            ctrl.rename(self.name, i)
             self.helper.get("hidden").extend([ctrl.zero, ctrl.space])
         # align
         data = bonetools.curve_data(self.helper["curve"])
@@ -67,10 +67,10 @@ class IK(Base):
         root = bonetools.curve2chain(self.helper.get("curve"),
                                      parent=self.helper["root"])
         # rename
-        root.Name = self.nm.qn(self.solvername + "Root", "jnt")
-        root.Effector.Name = self.nm.qn(self.solvername + "Eff", "jnt")
+        root.Name = self.nm.qn(self.name + "Root", "jnt")
+        root.Effector.Name = self.nm.qn(self.name + "Eff", "jnt")
         for i in range(root.Bones.Count):
-            root.Bones(i).Name = self.nm.qn(self.solvername, "jnt", i)
+            root.Bones(i).Name = self.nm.qn(self.name, "jnt", i)
         # cleanup
         self.helper.get("hidden").extend(list(root.Bones))
         self.helper.get("hidden").extend([root, root.Effector])

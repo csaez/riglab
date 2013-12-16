@@ -76,7 +76,7 @@ class StringToken(TokenInterface):
         return value
 
     def isvalid(self, value):
-        return all([ch.isalpha() for ch in str(value)])
+        return any([ch.isalpha() for ch in str(value)])
 
 
 class NumberToken(TokenInterface):

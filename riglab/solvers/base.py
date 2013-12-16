@@ -1,5 +1,4 @@
-from wishlib.si import si, siget, C, SIWrapper, sianchor
-from wishlib.qt.QtGui import QProgressDialog
+from wishlib.si import si, C, SIWrapper
 
 from .. import naming
 from .. import bonetools
@@ -10,14 +9,9 @@ class Base(SIWrapper):
     # naming manager
     nm = naming.Manager()
     nm.rule = "3dobject"
-    # progress bar
-    pb = QProgressDialog(sianchor())
-    pb.setMinimum(0)
-    pb.setMaximum(100)
 
-    def __init__(self, obj, name=None):
+    def __init__(self, obj):
         self.classname = self.__class__.__name__
-        self.solvername = name or self.classname
         self.input = {"root": None,
                       "parameters": None,
                       "active": None,
@@ -37,9 +31,6 @@ class Base(SIWrapper):
         self.input["skeleton"] = list(skeleton)
 
         # init
-        self.pb.setLabelText("Init solver")
-        self.pb.setValue(10)
-        self.pb.show()
         limit = len(self.input.get("skeleton")) - 1
         for i, bone in enumerate(self.input.get("skeleton")):
             # set bone params
@@ -47,28 +38,20 @@ class Base(SIWrapper):
                 bone.Kinematics.Local.Parameters(param).Value = False
             if i < limit:
                 # set outputs
-                name = self.nm.qn(self.solvername, i, "rig")
+                name = self.nm.qn(self.name, i, "rig")
                 self.output["tm"].append(self.output.get("root").AddNull(name))
         self.helper.get("hidden").extend(self.output.get("tm"))
 
         # custom parameters
-        self.pb.setLabelText("Setting input parameters")
-        self.pb.setValue(20)
         self.custom_inputs()
 
         # anim controls
-        self.pb.setLabelText("Setting anim controls")
-        self.pb.setValue(30)
         self.create_anim()
 
         # solver implementation
-        self.pb.setLabelText("Building {0}Solver".format(self.classname))
-        self.pb.setValue(50)
         self.custom_build()
 
         # connect
-        self.pb.setLabelText("Connecting")
-        self.pb.setValue(70)
         first = bonetools.deep(self.input["skeleton"][0])
         next = bonetools.deep(self.input["skeleton"][1])
         if first <= next:
@@ -77,22 +60,16 @@ class Base(SIWrapper):
             self.connect_reverse()
 
         # style
-        self.pb.setLabelText("Styling")
-        self.pb.setValue(90)
         self.style()
 
         # refresh softimage ui
-        self.pb.setLabelText("Serializing")
-        self.pb.setValue(100)
         self.update()
         si.Refresh()
-
-        self.pb.close()
 
     def create_anim(self):
         self.helper["curve"] = bonetools.sel2curve(self.input.get("skeleton"),
                                                    parent=self.helper["root"])
-        self.helper["curve"].Name = self.nm.qn(self.solvername, "curve")
+        self.helper["curve"].Name = self.nm.qn(self.name, "curve")
         self.helper["hidden"].append(self.helper.get("curve"))
         self.custom_anim()
 
@@ -147,20 +124,24 @@ class Base(SIWrapper):
             self.state = state
 
     @classmethod
-    def new(cls, skeleton, name=None):
+    def new(cls, skeleton, name=None, root=None):
         if not cls.validate(skeleton):
             return
+        root = root or si.ActiveSceneRoot
+        name = name or cls.__name__
         # solver objs
-        obj = si.ActiveSceneRoot.AddNull()
-        s = cls(obj, name=name)
+        obj = root.AddNull()
+        s = cls(obj)
+        s.name = name
         s.output["root"] = obj.AddNull()
         s.helper["root"] = obj.AddNull()
         s.input["root"] = obj.AddNull()
         # rename
-        s.obj.Name = cls.nm.qn(s.solvername + "Solver", "group")
-        s.output["root"].Name = cls.nm.qn(s.solvername + "Output", "group")
-        s.helper["root"].Name = cls.nm.qn(s.solvername + "Helper", "group")
-        s.input["root"].Name = cls.nm.qn(s.solvername + "Input", "group")
+        cls.nm.rule = "3dobject"
+        s.obj.Name = cls.nm.qn(s.name + "Root", "group")
+        s.output["root"].Name = cls.nm.qn(s.name + "Output", "group")
+        s.helper["root"].Name = cls.nm.qn(s.name + "Helper", "group")
+        s.input["root"].Name = cls.nm.qn(s.name + "Input", "group")
         # add to hidden list
         s.helper.get("hidden").extend([s.obj, s.input.get("root"),
                                        s.output.get("root"),

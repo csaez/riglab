@@ -73,6 +73,9 @@
     </widget>
     <addaction name="addBehaviour"/>
     <addaction name="removeBehaviour"/>
+    <addaction name="separator"/>
+    <addaction name="snap"/>
+    <addaction name="inspect"/>
    </widget>
    <widget class="QMenu" name="rigMenu">
     <property name="title">
@@ -97,7 +100,8 @@
     <addaction name="activeRig"/>
     <addaction name="separator"/>
     <addaction name="modeMenu"/>
-    <addaction name="editSkeleton"/>
+    <addaction name="setSkeleton"/>
+    <addaction name="setMeshes"/>
    </widget>
    <widget class="QMenu" name="groupMenu">
     <property name="title">
@@ -119,16 +123,30 @@
      </property>
      <addaction name="addState"/>
      <addaction name="removeState"/>
+     <addaction name="separator"/>
+     <addaction name="autoSnap"/>
     </widget>
-    <addaction name="stateMenu"/>
-    <addaction name="separator"/>
     <addaction name="templateMenu"/>
+    <addaction name="separator"/>
+    <addaction name="stateMenu"/>
     <addaction name="addGroup"/>
     <addaction name="removeGroup"/>
+   </widget>
+   <widget class="QMenu" name="extrasMenu">
+    <property name="title">
+     <string>Extras</string>
+    </property>
+    <addaction name="namingConvention"/>
+    <addaction name="separator"/>
+    <addaction name="rigiconConvention"/>
+    <addaction name="rigiconLibrary"/>
+    <addaction name="separator"/>
+    <addaction name="docs"/>
    </widget>
    <addaction name="rigMenu"/>
    <addaction name="groupMenu"/>
    <addaction name="behaviourMenu"/>
+   <addaction name="extrasMenu"/>
   </widget>
   <action name="actionAdd_Group">
    <property name="text">
@@ -260,7 +278,7 @@
     <string>Save as...</string>
    </property>
   </action>
-  <action name="editSkeleton">
+  <action name="setSkeleton">
    <property name="text">
     <string>Set Skeleton</string>
    </property>
@@ -277,7 +295,7 @@
   </action>
   <action name="savePose">
    <property name="text">
-    <string>Save current pose as...</string>
+    <string>Save current pose</string>
    </property>
   </action>
   <action name="defaultGroup">
@@ -293,6 +311,51 @@
   <action name="pasteTemplate">
    <property name="text">
     <string>Paste</string>
+   </property>
+  </action>
+  <action name="setMeshes">
+   <property name="text">
+    <string>Set Meshes</string>
+   </property>
+  </action>
+  <action name="inspect">
+   <property name="text">
+    <string>Inspect Parameters</string>
+   </property>
+  </action>
+  <action name="snap">
+   <property name="text">
+    <string>Snap</string>
+   </property>
+  </action>
+  <action name="autoSnap">
+   <property name="text">
+    <string>Auto-snap</string>
+   </property>
+  </action>
+  <action name="namingConvention">
+   <property name="text">
+    <string>Naming Convention</string>
+   </property>
+  </action>
+  <action name="rigiconLibrary">
+   <property name="text">
+    <string>RigIcon Library</string>
+   </property>
+  </action>
+  <action name="rigiconConvention">
+   <property name="text">
+    <string>RigIcon Convention</string>
+   </property>
+  </action>
+  <action name="actionAbout_2">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="docs">
+   <property name="text">
+    <string>Documentation</string>
    </property>
   </action>
  </widget>

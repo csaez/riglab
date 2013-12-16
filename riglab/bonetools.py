@@ -44,11 +44,10 @@ def align_matrix4(obj, matrix):
     obj.Kinematics.Global.Transform = tm
 
 
-def deep(obj, i=0):
-    if obj.Parent.FullName != si.ActiveSceneRoot.FullName:
-        i += 1
-        i += deep(obj.Parent)
-    return i
+def deep(obj, d=0):
+    if obj.Parent.FullName == si.ActiveSceneRoot.Name:
+        return d
+    deep(obj.Parent, d + 1)
 
 
 # CONVERTERS
