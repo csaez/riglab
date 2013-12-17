@@ -1,13 +1,15 @@
 import os
 import sys
-import json
 import webbrowser
+# import json
+
 from PyQt4 import QtCore, QtGui, uic
 from wishlib.qt.QtGui import QMainWindow
 from wishlib.si import si, sisel, show_qt
+from rigicon.layout.library_gui import RigIconLibrary
+
 from .. import riglab
 from .. import naming
-from rigicon.layout.library_gui import RigIconLibrary
 
 
 class MyDelegate(QtGui.QItemDelegate):
@@ -119,8 +121,6 @@ class Manager(QMainWindow):
         self.reload_stack()
 
     def newrig_clicked(self):
-        if self._mute:
-            return
         name, ok = QtGui.QInputDialog.getText(self, "New Rig", "Rig name:")
         if not ok:
             return
@@ -132,31 +132,23 @@ class Manager(QMainWindow):
         self.active_rig.mode = index
 
     def setSkeleton_clicked(self):
-        if self._mute or not self.active_rig:
-            return
         self.active_rig.skeleton = sisel
         for i in range(2):
             self.active_rig.save_pose(i)
 
     def setMeshes_clicked(self):
-        if self._mute or not self.active_rig:
-            return
         self.active_rig.meshes = sisel
 
     def copytemplate_clicked(self):
-        if self._mute or not self.active_rig:
-            return
         self._clipboard = self.active_rig.export_data(self.active_group)
 
     def pastetemplate_clicked(self):
-        if self._mute or not self.active_rig or not self._clipboard:
+        if not self._clipboard:
             return
         self.active_rig.load_data(self.active_group, self._clipboard.copy())
         self.reload_stack()
 
     def addgroup_clicked(self):
-        if self._mute:
-            return
         name, ok = QtGui.QInputDialog.getText(self, "Add Group", "Group name:")
         name = str(name)
         if not ok or not len(name):
@@ -165,11 +157,9 @@ class Manager(QMainWindow):
         self.reload_stack()
 
     def removegroup_clicked(self):
-        item = self.ui.stack.currentItem()
-        if self._mute or item is None or item.parent() is not None:
+        if self.active_group is None:
             return
-        grp_name = str(item.text(0))
-        if len(self.active_rig.groups[grp_name]["solvers"]):
+        if len(self.active_rig.groups[self.active_group]["solvers"]):
             msgbox = QtGui.QMessageBox(self)
             msgbox.addButton(QtGui.QMessageBox.Yes)
             msgbox.addButton(QtGui.QMessageBox.No)
@@ -177,31 +167,30 @@ class Manager(QMainWindow):
             msgbox.setIcon(QtGui.QMessageBox.Question)
             if msgbox.exec_() == QtGui.QMessageBox.No:
                 return
-        self.active_rig.remove_group(grp_name)
+        self.active_rig.remove_group(self.active_group)
         self.reload_stack()
 
     def savestate_clicked(self):
-        if self._mute or not self.active_group or not len(self.active_rig.groups[self.active_group]["solvers"]):
+        if self.active_group is None:
             return
-        name, ok = QtGui.QInputDialog.getText(
-            self, "Save state as...", "State name:")
-        name = str(name)
-        if not ok or not len(name):
+        n, ok = QtGui.QInputDialog.getText(self, "Save state", "State name:")
+        n = str(n)
+        if not ok or not len(n):
             return
-        self.active_rig.save_state(self.active_group, name)
+        self.active_rig.save_state(self.active_group, n)
         self.reload_stack()
 
     def removestate_clicked(self):
-        if self._mute or not self.active_rig or self.active_group is None:
+        if self.active_group is None:
             return
         states = self.active_rig.groups[self.active_group]["states"].keys()
         if not len(states):
             return
-        name, ok = QtGui.QInputDialog.getItem(
+        n, ok = QtGui.QInputDialog.getItem(
             self, "Remove State", "States:", states, 0, False)
         if not ok:
             return
-        del self.active_rig.groups[self.active_group]["states"][str(name)]
+        del self.active_rig.groups[self.active_group]["states"][str(n)]
         self.reload_stack()
 
     def autosnap_clicked(self):
@@ -222,67 +211,58 @@ class Manager(QMainWindow):
         self.reload_stack()
 
     def groupSkeleton_clicked(self):
-        item = self.ui.stack.currentItem()
-        if self._mute or item is None or item.parent() is not None:
+        if self.active_group is None:
             return
-        si.SelectObj(self.active_rig.get_skeleton(str(item.text(0))))
+        si.SelectObj(self.active_rig.get_skeleton(self.active_group))
 
     def groupManipulators_clicked(self):
-        item = self.ui.stack.currentItem()
-        if self._mute or item is None or item.parent() is not None:
+        if self.active_group is None:
             return
-        si.SelectObj(self.active_rig.get_anim(str(item.text(0))))
+        si.SelectObj(self.active_rig.get_anim(self.active_group))
 
     def addsolver_clicked(self, solver):
-        if self._mute and self.active_group:
+        if not self.active_solver:
             return
         self.active_rig.add_solver(solver, self.active_group)
         self.reload_stack()
 
     def removesolver_clicked(self, solver=None):
-        item = self.ui.stack.currentItem()
-        if self._mute or item is None or item.parent() is None:
+        if not self.active_solver:
             return
-        solver_name = str(item.text(0))
+        solver_name = str(self.ui.stack.currentItem().text(0))
         self.active_rig.remove_solver(solver_name)
         self.reload_stack()
 
     def snapsolver_clicked(self):
-        item = self.ui.stack.currentItem()
-        if self._mute or item is None or item.parent() is None:
+        if not self.active_solver:
             return
-        solver_name = str(item.text(0))
+        solver_name = str(self.ui.stack.currentItem().text(0))
         self.active_rig.get_solver(solver_name).snap()
 
     def inspectsolver_clicked(self):
-        item = self.ui.stack.currentItem()
-        if self._mute or item is None or item.parent() is None:
+        if not self.active_solver:
             return
-        solver_name = str(item.text(0))
-        param = self.active_rig.get_solver(solver_name).input.get("parameters")
-        if param:
-            si.InspectObj(param)
+        solver_name = str(self.ui.stack.currentItem().text(0))
+        p = self.active_rig.get_solver(solver_name).input.get("parameters")
+        if p:
+            si.InspectObj(p)
 
     def solverSkeleton_clicked(self):
-        item = self.ui.stack.currentItem()
-        if self._mute or item is None or item.parent() is None:
+        if not self.active_solver:
             return
-        solver = self.active_rig.get_solver(str(item.text(0)))
-        si.SelectObj(solver.input["skeleton"])
+        solver_name = str(self.ui.stack.currentItem().text(0))
+        si.SelectObj(self.active_rig.get_solver(solver_name).input["skeleton"])
 
     def solverManipulators_clicked(self):
-        item = self.ui.stack.currentItem()
-        if self._mute or item is None or item.parent() is None:
+        if not self.active_solver:
             return
-        solver = self.active_rig.get_solver(str(item.text(0)))
-        si.SelectObj(solver.input["anim"])
+        solver_name = str(self.ui.stack.currentItem().text(0))
+        si.SelectObj(self.active_rig.get_solver(solver_name).input["anim"])
 
     def stack_changed(self, item, column):
         if self._mute or item.childCount():
             return
-        self.ui.stack.itemChanged.connect
-        solver_name = str(item.text(0))
-        solver = self.active_rig.get_solver(solver_name)
+        solver = self.active_rig.get_solver(str(item.text(0)))
         solver.state = bool(item.checkState(column))
 
     def stack_contextmenu(self, pos):
@@ -395,11 +375,17 @@ class Manager(QMainWindow):
     def active_group(self):
         item = self.ui.stack.currentItem()
         if self.active_rig and item:
-            if item.parent() is not None:
-                item = item.parent()
-            return str(item.text(0))
+            if item.parent() is None:
+                return str(item.text(0))
         return None
 
+    @property
+    def active_solver(self):
+        item = self.ui.stack.currentItem()
+        if self.active_rig and item:
+            if item.parent() is not None:
+                return str(item.text(0))
+        return None
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

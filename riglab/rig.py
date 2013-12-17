@@ -62,7 +62,7 @@ class Rig(SIWrapper):
     def get_skeleton(self, group_name):
         if not self.groups.get(group_name):
             return
-        skel = self.collect_data_solver(
+        skel = self.collect_from_solvers(
             group_name, lambda x: x.input["skeleton"])
         skel = set([x.FullName for x in skel])  # remove duplicates
         return [siget(x) for x in skel]
@@ -70,11 +70,11 @@ class Rig(SIWrapper):
     def get_anim(self, group_name):
         if not self.groups.get(group_name):
             return
-        anim = self.collect_data_solver(group_name, lambda x: x.input["anim"])
+        anim = self.collect_from_solvers(group_name, lambda x: x.input["anim"])
         anim = set([x.FullName for x in anim])  # remove duplicates
         return [siget(x) for x in anim]
 
-    def collect_data_solver(self, group_name, query_function):
+    def collect_from_solvers(self, group_name, query_function):
         """Utility function used to collect solver data in a group"""
         data = list()
         for solver_name in self.groups[group_name]["solvers"]:
