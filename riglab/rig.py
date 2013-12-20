@@ -90,7 +90,7 @@ class Rig(SIWrapper):
         # ensure rigging mode
         self.mode = 1
         # save stack state
-        solver_stack = [self.get_solver(x) for x in self.solvers.keys()]
+        solver_stack = [self.get_solver(x) for x in self.solvers]
         old_state = list()
         for x in solver_stack:
             old_state.append(x.state)

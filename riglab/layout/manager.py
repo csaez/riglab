@@ -35,9 +35,7 @@ class Manager(QMainWindow):
         self._clipboard = None
         self._mute = False
         self._index = -1
-        self.autosnap = False
         self.initUI()
-        self.autosnap_clicked()
 
     def initUI(self):
         ui_dir = os.path.join(os.path.dirname(__file__), "ui")
@@ -94,6 +92,9 @@ class Manager(QMainWindow):
         # set active rig
         self.active_rig = self.riglab.scene_rigs[
             0] if len(self.riglab.scene_rigs) else None
+        # set autosnap's default to True
+        self.autosnap = False
+        self.autosnap_clicked()  # update icon
 
     # SLOTS
     def renameitem_clicked(self, model_index):
@@ -183,7 +184,7 @@ class Manager(QMainWindow):
     def removestate_clicked(self):
         if self.active_group is None:
             return
-        states = self.active_rig.groups[self.active_group]["states"].keys()
+        states = self.active_rig.groups[self.active_group]["states"]
         if not len(states):
             return
         n, ok = QtGui.QInputDialog.getItem(
@@ -221,7 +222,7 @@ class Manager(QMainWindow):
         si.SelectObj(self.active_rig.get_anim(self.active_group))
 
     def addsolver_clicked(self, solver):
-        if not self.active_solver:
+        if self.active_group is None:
             return
         self.active_rig.add_solver(solver, self.active_group)
         self.reload_stack()
@@ -322,7 +323,7 @@ class Manager(QMainWindow):
             group.setIcon(0, ICON("group"))
             self.ui.stack.addTopLevelItem(group)
             # add state combobox
-            states = self.active_rig.groups[group_name]["states"].keys()
+            states = self.active_rig.groups[group_name]["states"]
             s = QtGui.QComboBox()
             s.addItems(states)
             QtCore.QObject.connect(
