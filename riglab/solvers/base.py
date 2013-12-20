@@ -53,8 +53,9 @@ class Base(SIWrapper):
 
         # connect
         first = bonetools.deep(self.input["skeleton"][0])
-        next = bonetools.deep(self.input["skeleton"][1])
-        if first <= next:
+        last = [bonetools.deep(x) for x in self.input["skeleton"][1:]]
+        last = sum(last) / len(last)
+        if first <= last:
             self.connect()
         else:
             self.connect_reverse()

@@ -323,7 +323,7 @@ class Manager(QMainWindow):
             group.setIcon(0, ICON("group"))
             self.ui.stack.addTopLevelItem(group)
             # add state combobox
-            states = self.active_rig.groups[group_name]["states"]
+            states = self.active_rig.groups[group_name]["states"].keys()
             s = QtGui.QComboBox()
             s.addItems(states)
             QtCore.QObject.connect(

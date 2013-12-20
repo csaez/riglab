@@ -47,7 +47,7 @@ def align_matrix4(obj, matrix):
 def deep(obj, d=0):
     if obj.Parent.FullName == si.ActiveSceneRoot.Name:
         return d
-    deep(obj.Parent, d + 1)
+    return deep(obj.Parent, d + 1)
 
 
 # CONVERTERS
