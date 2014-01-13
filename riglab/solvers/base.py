@@ -41,25 +41,19 @@ class Base(SIWrapper):
                 name = self.nm.qn(self.name, i, "rig")
                 self.output["tm"].append(self.output.get("root").AddNull(name))
         self.helper.get("hidden").extend(self.output.get("tm"))
-
         # custom parameters
         self.custom_inputs()
-
         # anim controls
         self.create_anim()
-
         # solver implementation
         self.custom_build()
-
         # connect
         if self.reversed():
             self.connect_reverse()
         else:
             self.connect()
-
         # style
         self.style()
-
         # refresh softimage ui
         self.update()
         si.Refresh()

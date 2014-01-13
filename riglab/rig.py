@@ -43,6 +43,9 @@ class Rig(SIWrapper):
         self.solvers = dict()
         super(Rig, self).__init__(model, "rig_data")
         self.name = self.obj.Name
+        # solver's cache,
+        # it's not serialized because of softimage indirect dependencies
+        self.solvers_pool = dict()
 
     def add_group(self, name):
         self.groups[name] = {
@@ -108,7 +111,7 @@ class Rig(SIWrapper):
         # restore stack states
         for i, x in enumerate(solver_stack):
             x.state = old_state[i]
-        # restor selection
+        # restore selection
         si.SelectObj(skeleton)
         # return solver
         return solver
@@ -125,10 +128,17 @@ class Rig(SIWrapper):
         self.update()
 
     def get_solver(self, name):
-        obj = self.solvers.get(name)
-        if obj:
-            solver_class = SIWrapper(obj, "Solver_Data").classname
-            return getattr(solvers, solver_class)(obj)
+        # look for the solver in cache
+        s = self.solvers_pool.get(name)
+        # if it's not there then reintantiate
+        if s is None:  # not cached
+            obj = self.solvers.get(name)
+            if obj:
+                solver_class = SIWrapper(obj, "Solver_Data").classname
+                s = getattr(solvers, solver_class)(obj)
+                # add it to the pool
+                self.solvers_pool[name] = s
+        return s
 
     def save_state(self, group_name, name):
         grp = self.groups.get(group_name)
@@ -169,17 +179,16 @@ class Rig(SIWrapper):
         grp["active"] = name
         self.update()
         # check autokey
-        if not si.GetValue("preferences.animation.autokey"):
-            return
-        # manage keyframes
-        current_frame = si.GetValue("PlayControl.Current")
-        for i, solver_name in enumerate(grp["solvers"]):
-            solver = self.get_solver(solver_name)
-            param = (solver.input.get("active"),
-                     solver.input.get("blendweight"))
-            si.SaveKeyOnKeyable(solver.input.get("anim"))
-            si.SaveKey(param, current_frame)
-            si.SaveKey(param, current_frame - 1, old_state[i])
+        if si.GetValue("preferences.animation.autokey"):
+            # manage keyframes
+            current_frame = si.GetValue("PlayControl.Current")
+            for i, solver_name in enumerate(grp["solvers"]):
+                solver = self.get_solver(solver_name)
+                param = (solver.input.get("active"),
+                         solver.input.get("blendweight"))
+                si.SaveKeyOnKeyable(solver.input.get("anim"))
+                si.SaveKey(param, current_frame)
+                si.SaveKey(param, current_frame - 1, old_state[i])
 
     def export_data(self, group_name):
         if not self.groups.get(group_name):
