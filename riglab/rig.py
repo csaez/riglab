@@ -141,16 +141,45 @@ class Rig(SIWrapper):
         grp["states"][name] = data
         self.update()
 
-    def apply_state(self, group_name, name):
+    def apply_state(self, group_name, name, snap=False):
         grp = self.groups.get(group_name)
         if not grp or not grp["states"].get(name):
             return
+        # get solvers
+        solvers = [self.get_solver(solver_name)
+                   for solver_name in grp["solvers"]]
+        # save states
+        old_state = list()
+        for solver in solvers:
+            old_state.append(solver.state)
+
+        # ==============
+        # TODO: Fix snap
+        # ==============
+        if snap:
+            # map(lambda s: s.snap(), solvers)
+            for s in solvers:
+                for _ in range(2):
+                    s.snap()
+
+        # apply new state
         for state_name, state_value in grp["states"][name].iteritems():
-            solver = [self.get_solver(x) for x in grp["solvers"]
-                      if x == state_name][0]
+            solver = [x for x in solvers if x.name == state_name][0]
             solver.state = state_value
         grp["active"] = name
         self.update()
+        # check autokey
+        if not si.GetValue("preferences.animation.autokey"):
+            return
+        # manage keyframes
+        current_frame = si.GetValue("PlayControl.Current")
+        for i, solver_name in enumerate(grp["solvers"]):
+            solver = self.get_solver(solver_name)
+            param = (solver.input.get("active"),
+                     solver.input.get("blendweight"))
+            si.SaveKeyOnKeyable(solver.input.get("anim"))
+            si.SaveKey(param, current_frame)
+            si.SaveKey(param, current_frame - 1, old_state[i])
 
     def export_data(self, group_name):
         if not self.groups.get(group_name):

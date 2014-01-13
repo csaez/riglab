@@ -13,10 +13,12 @@ class FK(Base):
         anim = [Manipulator.new(parent=self.input.get("root"))]
         anim[0].owner = {"obj": self.obj, "class": self.classname}
         anim[0].icon.shape = "Box_Bone"
+        anim[0].spaces = {"default": None}
         # OPTIMIZATION: duplicate instead of create a new one
         copies = len(self.input.get("skeleton")) - 1
         anim.extend(anim[0].duplicate(copies))
         anim[0].icon.shape = "Pointed_Circle"
+        anim[0].spaces = {}
         # align
         data = zip(*bonetools.curve_data(self.helper.get("curve")))
         bonetools.align_matrix4(anim[0].zero, data[0][0])
@@ -34,12 +36,16 @@ class FK(Base):
 
     def custom_build(self):
         super(FK, self).custom_build()
-        for i, bone in enumerate(self.input.get("skeleton")[:-1]):
+        skeleton = self.input.get("skeleton")[:-1]
+        if self.reversed():
+            skeleton = self.input.get("skeleton")[1:]
+        for i, bone in enumerate(skeleton):
             anim = self.input["anim"][i + 1]
             self.output["tm"][i].Kinematics.AddConstraint("Pose", anim)
             # set snap reference
             Manipulator(anim).snap_ref(bone)
-        # Manipulator(self.input["anim"][0]).snap_ref(self.input["skeleton"][0])
+        # connect root
+        Manipulator(self.input["anim"][0]).snap_ref(self.input["skeleton"][0])
 
     @staticmethod
     def validate(skeleton):

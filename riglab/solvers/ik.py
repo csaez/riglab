@@ -78,4 +78,4 @@ class IK(Base):
 
     @staticmethod
     def validate(skeleton):
-        return len(skeleton) > 2
+        return len(skeleton) >= 2

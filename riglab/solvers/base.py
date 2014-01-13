@@ -52,13 +52,10 @@ class Base(SIWrapper):
         self.custom_build()
 
         # connect
-        first = bonetools.deep(self.input["skeleton"][0])
-        last = [bonetools.deep(x) for x in self.input["skeleton"][1:]]
-        last = sum(last) / len(last)
-        if first <= last:
-            self.connect()
-        else:
+        if self.reversed():
             self.connect_reverse()
+        else:
+            self.connect()
 
         # style
         self.style()
@@ -101,14 +98,14 @@ class Base(SIWrapper):
     @property
     def state(self):
         if self.input.get("active"):
-            return self.input.get("active").Value
+            return bool(self.input.get("blendweight").Value)
         raise NotImplementedError()
 
     @state.setter
     def state(self, value):
         if self.input.get("active"):
-            self.input.get("active").Value = value
             self.input.get("blendweight").Value = float(value)
+            self.input.get("active").Value = value
 
     def destroy(self):
         si.DeleteObj("B:{}".format(self.obj))
@@ -120,7 +117,7 @@ class Base(SIWrapper):
             for anim in self.input.get("anim"):
                 Manipulator(anim).snap()
         except:
-            raise  # raise with no arguments re-raise the last exception
+            raise  # re-raise the last exception
         finally:
             self.state = state
 
@@ -177,3 +174,10 @@ class Base(SIWrapper):
 
     def custom_build(self):
         pass
+
+    def reversed(self):
+        first = bonetools.deep(self.input["skeleton"][0])
+        last = [bonetools.deep(x) for x in self.input["skeleton"][1:]]
+        if first <= sum(last) / len(last):
+            return False
+        return True

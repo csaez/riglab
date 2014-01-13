@@ -5,11 +5,13 @@ import webbrowser
 
 from PyQt4 import QtCore, QtGui, uic
 from wishlib.qt.QtGui import QMainWindow
+from wishlib.qt.decorators import progressbar
 from wishlib.si import si, sisel, show_qt
 from rigicon.layout.library_gui import RigIconLibrary
 
 from .. import riglab
 from .. import naming
+from ..manipulator import Manipulator
 
 
 class MyDelegate(QtGui.QItemDelegate):
@@ -52,6 +54,7 @@ class Manager(QMainWindow):
         self.ui.stack.doubleClicked.connect(self.renameitem_clicked)
         # rig signals
         self.ui.rigMenu.aboutToShow.connect(self.reload_rigmenu)
+        self.ui.reload.triggered.connect(self.reload_stack)
         self.ui.newRig.triggered.connect(self.newrig_clicked)
         for i, widget in enumerate((self.ui.deformationMode, self.ui.riggingMode)):
             QtCore.QObject.connect(
@@ -202,13 +205,7 @@ class Manager(QMainWindow):
     def state_changed(self, name, group_name):
         if self._mute:
             return
-        if self.autosnap:
-            solvers = [self.active_rig.get_solver(solver_name)
-                       for solver_name in self.active_rig.groups[group_name]["solvers"]]
-            for solver in solvers:
-                if not solver.state:
-                    solver.snap()
-        self.active_rig.apply_state(group_name, name)
+        self.active_rig.apply_state(group_name, name, snap=self.autosnap)
         self.reload_stack()
 
     def groupSkeleton_clicked(self):
@@ -221,6 +218,7 @@ class Manager(QMainWindow):
             return
         si.SelectObj(self.active_rig.get_anim(self.active_group))
 
+    @progressbar()
     def addsolver_clicked(self, solver):
         if self.active_group is None:
             return
@@ -261,10 +259,11 @@ class Manager(QMainWindow):
         si.SelectObj(self.active_rig.get_solver(solver_name).input["anim"])
 
     def stack_changed(self, item, column):
-        if self._mute or item.childCount():
+        if self._mute:
             return
-        solver = self.active_rig.get_solver(str(item.text(0)))
-        solver.state = bool(item.checkState(column))
+        if item.childCount() and item.parent():  # it's a solver
+            solver = self.active_rig.get_solver(str(item.text(0)))
+            solver.state = bool(item.checkState(column))
 
     def stack_contextmenu(self, pos):
         # filter context using selection
@@ -273,7 +272,9 @@ class Manager(QMainWindow):
         item = self.ui.stack.itemAt(pos)
         if item is None:
             menu = self.ui.menubar.children()[-1]
-        elif item.parent():  # if it has parent then is a behaviour
+        elif item.parent() and not item.childCount():  # it is a manipulator
+            menu = self.ui.manipulatorMenu
+        elif item.parent() and item.childCount():  # it is a behaviour
             menu = self.ui.behaviourMenu
         else:
             menu = self.ui.groupMenu
@@ -343,6 +344,13 @@ class Manager(QMainWindow):
                 s.setIcon(0, ICON(solver.classname.lower()))
                 group.addChild(s)
                 s.setCheckState(1, 2 if solver.state else 0)
+                # add manipulators
+                for a in solver.input.get("anim"):
+                    anim = QtGui.QTreeWidgetItem((a.Name, ""))
+                    s.addChild(anim)
+                    spaces = QtGui.QComboBox()
+                    spaces.addItems(Manipulator(a).spaces.keys())
+                    self.ui.stack.setItemWidget(anim, 1, spaces)
         # restore view config (by name)
         for i in range(self.ui.stack.topLevelItemCount()):
             item = self.ui.stack.topLevelItem(i)
@@ -356,7 +364,8 @@ class Manager(QMainWindow):
     def disable_gui(self, value):
         widgets = (self.ui.stack, self.ui.groupMenu,
                    self.ui.behaviourMenu, self.ui.setSkeleton,
-                   self.ui.setMeshes, self.ui.modeMenu)
+                   self.ui.setMeshes, self.ui.modeMenu,
+                   self.ui.manipulatorMenu)
         for w in widgets:
             w.setEnabled(value)
 
