@@ -11,7 +11,6 @@ from rigicon.layout.library_gui import RigIconLibrary
 
 from .. import riglab
 from .. import naming
-from ..manipulator import Manipulator
 
 
 class MyDelegate(QtGui.QItemDelegate):
@@ -349,7 +348,7 @@ class Manager(QMainWindow):
                     anim = QtGui.QTreeWidgetItem((a.Name, ""))
                     s.addChild(anim)
                     spaces = QtGui.QComboBox()
-                    spaces.addItems(Manipulator(a).spaces.keys())
+                    spaces.addItems(solver.get_man(a).spaces.keys())
                     self.ui.stack.setItemWidget(anim, 1, spaces)
         # restore view config (by name)
         for i in range(self.ui.stack.topLevelItemCount()):

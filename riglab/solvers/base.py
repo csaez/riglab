@@ -24,6 +24,7 @@ class Base(SIWrapper):
                        "hidden": list(),
                        "curve": None}
         super(Base, self).__init__(obj, "Solver_Data")
+        self.manipulators_pool = dict()
 
     def build(self, skeleton):
         if not self.validate(skeleton):
@@ -89,6 +90,13 @@ class Base(SIWrapper):
             viewvis = anim.Properties("Visibility").Parameters("viewvis")
             viewvis.AddExpression(self.input.get("blendweight").FullName)
 
+    def get_man(self, obj):
+        m = self.manipulators_pool.get(obj.Name)
+        if m is None:
+            m = Manipulator(obj)
+            self.manipulators_pool[obj.Name] = m
+        return m
+
     @property
     def state(self):
         if self.input.get("active"):
@@ -109,7 +117,7 @@ class Base(SIWrapper):
         self.state = False
         try:
             for anim in self.input.get("anim"):
-                Manipulator(anim).snap()
+                self.get_man(anim).snap()
         except:
             raise  # re-raise the last exception
         finally:
