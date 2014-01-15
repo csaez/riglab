@@ -59,9 +59,11 @@ class IK(Base):
         expr = expr.format(**kwds)
         first_bone.Kinematics.Local.Parameters("sclx").AddExpression(expr)
         # set snap reference
-        self.get_man(self.input["anim"][0]).snap_ref(self.input["skeleton"][0])
-        self.get_man(self.input["anim"][1]).snap_ref(self.input["skeleton"][0])
-        self.get_man(self.input["anim"][2]).snap_ref(
+        self.get_manipulator(self.input["anim"][0].FullName).snap_ref(
+            self.input["skeleton"][0])
+        self.get_manipulator(self.input["anim"][1].FullName).snap_ref(
+            self.input["skeleton"][0])
+        self.get_manipulator(self.input["anim"][2].FullName).snap_ref(
             self.input["skeleton"][-1])
 
     def _ikchain(self):

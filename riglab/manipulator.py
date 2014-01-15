@@ -1,4 +1,6 @@
-from wishlib.si import si, simath, SIWrapper
+import os
+
+from wishlib.si import si, siget, simath, SIWrapper
 from rigicon.icon import Icon
 
 from . import naming
@@ -7,9 +9,11 @@ from . import bonetools
 
 class Manipulator(SIWrapper):
     nm = naming.Manager()
+    DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
     def __init__(self, obj):
         self.spaces = dict()
+        self._visibility = True
         self.owner = {"obj": None, "class": None}
         self._snap_ref = {"obj": None,
                           "offset": (1, 0, 0, 0,
@@ -35,25 +39,27 @@ class Manipulator(SIWrapper):
         return manipulator
 
     def add_space(self, name=None, target=None):
-        if not name or target:
+        if not target:
             return
         name = name or target.Name
         tm = self.zero.Kinematics.Global.Transform
         cns = self.space.Kinematics.AddConstraint("Pose", target, True)
         self.spaces[name] = cns
         self.zero.Kinematics.Global.Transform = tm
-        self.space_switch(name)
+        self.active_space = name
+        self.update()
 
     def remove_space(self, name):
         cns = self.spaces.get(name)
-        if cns is not None and name != self.active_space:
+        if cns is not None:
             si.DeleteObj(cns)
             del self.spaces[name]
+            self.update()
 
     @property
     def active_space(self):
         for name, cns in self.spaces.iteritems():
-            if cns.Parameters("active").Value:
+            if cns and cns.Parameters("active").Value:
                 return name
         return "default"
 
@@ -120,3 +126,30 @@ class Manipulator(SIWrapper):
             m4 = simath.CreateMatrix4(*self._snap_ref["offset"])
             m4.MulInPlace(obj.Kinematics.Global.Transform.Matrix4)
             bonetools.align_matrix4(self.anim, m4)
+
+    @property
+    def debug(self):
+        return siget(self._debug_prop() + ".Debug").Value
+
+    @debug.setter
+    def debug(self, value):
+        p = self._debug_prop()
+        siget(p + ".Reference").Value = self.active_space
+        siget(p + ".Debug").Value = value
+
+    def _debug_prop(self):
+        cmp_name = "riglab__ActiveSpace"
+        cmp_file = os.path.join(self.DATA_DIR, "compounds",
+                                cmp_name + ".xsicompound")
+        ICEOp = self.anim.ActivePrimitive.ICETrees.Find(cmp_name)
+        if not ICEOp:
+            ICEOp = si.SIApplyICEOp(cmp_file, self.anim, "")
+        return ICEOp.FullName + "." + cmp_name
+
+    @property
+    def visibility(self):
+        return self._visibility
+
+    @visibility.setter
+    def visibility(self, value):
+        self._visibility = value

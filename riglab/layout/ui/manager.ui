@@ -69,11 +69,11 @@
      <string>Behaviours</string>
     </property>
     <addaction name="removeBehaviour"/>
-    <addaction name="separator"/>
+    <addaction name="snap"/>
     <addaction name="inspect"/>
+    <addaction name="separator"/>
     <addaction name="solverManipulators"/>
     <addaction name="solverSkeleton"/>
-    <addaction name="snap"/>
    </widget>
    <widget class="QMenu" name="rigMenu">
     <property name="title">
@@ -159,16 +159,10 @@
     <property name="title">
      <string>Manipulators</string>
     </property>
-    <widget class="QMenu" name="spaceSwitching">
-     <property name="title">
-      <string>Space Switching</string>
-     </property>
-     <addaction name="addSpace"/>
-     <addaction name="removeSpace"/>
-     <addaction name="separator"/>
-    </widget>
-    <addaction name="spaceSwitching"/>
-    <addaction name="manFromScene"/>
+    <addaction name="fromSelection"/>
+    <addaction name="separator"/>
+    <addaction name="addSpace"/>
+    <addaction name="removeSpace"/>
     <addaction name="separator"/>
     <addaction name="manDebug"/>
     <addaction name="manVisibility"/>
@@ -401,7 +395,7 @@
   </action>
   <action name="manDebug">
    <property name="text">
-    <string>Toggle debug</string>
+    <string>Toggle Space Debug</string>
    </property>
   </action>
   <action name="actionSelect">
@@ -426,12 +420,12 @@
   </action>
   <action name="addSpace">
    <property name="text">
-    <string>New</string>
+    <string>Add Space</string>
    </property>
   </action>
   <action name="removeSpace">
    <property name="text">
-    <string>Remove</string>
+    <string>Remove Space</string>
    </property>
   </action>
   <action name="reload">
@@ -439,9 +433,9 @@
     <string>Reload</string>
    </property>
   </action>
-  <action name="manFromScene">
+  <action name="fromSelection">
    <property name="text">
-    <string>From Scene</string>
+    <string>Get Manipulator From Softimage</string>
    </property>
   </action>
  </widget>

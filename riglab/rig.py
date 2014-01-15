@@ -164,12 +164,13 @@ class Rig(SIWrapper):
             old_state.append(solver.state)
 
         # ==============
-        # TODO: Fix snap
+        # BUG: Fix snap
+        # Fails on FK->IK when using manipulators with custom spaces
         # ==============
         if snap:
             # map(lambda s: s.snap(), solvers)
             for s in solvers:
-                for _ in range(2):
+                for _ in range(1):
                     s.snap()
 
         # apply new state
@@ -270,3 +271,10 @@ class Rig(SIWrapper):
                 n += 1
                 temp_name = in_name + str(n).zfill(2)
         return temp_name
+
+    def get_manipulator(self, name):
+        for solver_name in self.solvers.keys():
+            solver = self.get_solver(solver_name)
+            for anim in solver.input.get("anim"):
+                if name == anim.Name:
+                    return solver.get_manipulator(anim.FullName)

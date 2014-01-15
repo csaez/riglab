@@ -84,6 +84,12 @@ class Manager(QMainWindow):
         self.ui.solverSkeleton.triggered.connect(self.solverSkeleton_clicked)
         self.ui.solverManipulators.triggered.connect(
             self.solverManipulators_clicked)
+        # manipulator signals
+        self.ui.addSpace.triggered.connect(self.addspace_clicked)
+        self.ui.removeSpace.triggered.connect(self.removespace_clicked)
+        self.ui.fromSelection.triggered.connect(self.fromselection_clicked)
+        self.ui.manDebug.triggered.connect(self.mandebug_clicked)
+        self.ui.manVisibility.triggered.connect(self.manvisibility_clicked)
         # extras signals
         self.ui.namingConvention.triggered.connect(
             lambda: show_qt(naming.editor.Editor))
@@ -257,6 +263,59 @@ class Manager(QMainWindow):
         solver_name = str(self.ui.stack.currentItem().text(0))
         si.SelectObj(self.active_rig.get_solver(solver_name).input["anim"])
 
+    def addspace_clicked(self):
+        if not self.active_manipulator:
+            return
+        m = self.active_rig.get_manipulator(self.active_manipulator)
+        pick = si.PickObject()("PickedElement")
+        print pick
+        if pick:
+            m.add_space(name=pick.Name, target=pick)
+            m.active_space = pick.Name
+        self.reload_stack()
+
+    def removespace_clicked(self):
+        if not self.active_manipulator:
+            return
+        m = self.active_rig.get_manipulator(self.active_manipulator)
+        # check for spaces
+        if not any(m.spaces.values()):
+            return
+        n, ok = QtGui.QInputDialog.getItem(
+            self, "Remove Space", "Spaces:", m.spaces.keys(), 0, False)
+        if ok:
+            m.remove_space(str(n))
+            self.reload_stack()
+
+    def fromselection_clicked(self):
+        # check selection
+        if not sisel.Count:
+            return
+        # loop through groups
+        for g in xrange(self.ui.stack.topLevelItemCount()):
+            grp_widget = self.ui.stack.topLevelItem(g)
+            # loop through solvers
+            for s in xrange(grp_widget.childCount()):
+                solver_widget = grp_widget.child(s)
+                # loop through manipulators
+                for a in xrange(solver_widget.childCount()):
+                    anim_widget = solver_widget.child(a)
+                    if str(sisel(0).Name) == str(anim_widget.text(0)):
+                        self.ui.stack.setCurrentItem(anim_widget)
+                        return
+
+    def mandebug_clicked(self):
+        if not self.active_manipulator:
+            return
+        m = self.active_rig.get_manipulator(self.active_manipulator)
+        m.debug = not m.debug
+
+    def manvisibility_clicked(self):
+        if not self.active_manipulator:
+            return
+        m = self.active_rig.get_manipulator(self.active_manipulator)
+        m.visibility = not m.visibility
+
     def stack_changed(self, item, column):
         if self._mute:
             return
@@ -348,7 +407,13 @@ class Manager(QMainWindow):
                     anim = QtGui.QTreeWidgetItem((a.Name, ""))
                     s.addChild(anim)
                     spaces = QtGui.QComboBox()
-                    spaces.addItems(solver.get_man(a).spaces.keys())
+                    m = solver.get_manipulator(a.FullName)
+                    spaces.addItems(m.spaces.keys())
+                    try:
+                        spaces.setCurrentIndex(
+                            m.spaces.keys().index(m.active_space))
+                    except:
+                        pass
                     self.ui.stack.setItemWidget(anim, 1, spaces)
         # restore view config (by name)
         for i in range(self.ui.stack.topLevelItemCount()):
@@ -392,7 +457,15 @@ class Manager(QMainWindow):
     def active_solver(self):
         item = self.ui.stack.currentItem()
         if self.active_rig and item:
-            if item.parent() is not None:
+            if item.parent() is not None and item.childCount():
+                return str(item.text(0))
+        return None
+
+    @property
+    def active_manipulator(self):
+        item = self.ui.stack.currentItem()
+        if self.active_rig and item:
+            if item.parent() is not None and not item.childCount():
                 return str(item.text(0))
         return None
 

@@ -1,4 +1,4 @@
-from wishlib.si import si, C, SIWrapper
+from wishlib.si import si, siget, C, SIWrapper
 
 from .. import naming
 from .. import bonetools
@@ -90,11 +90,11 @@ class Base(SIWrapper):
             viewvis = anim.Properties("Visibility").Parameters("viewvis")
             viewvis.AddExpression(self.input.get("blendweight").FullName)
 
-    def get_man(self, obj):
-        m = self.manipulators_pool.get(obj.Name)
+    def get_manipulator(self, name):
+        m = self.manipulators_pool.get(name)
         if m is None:
-            m = Manipulator(obj)
-            self.manipulators_pool[obj.Name] = m
+            m = Manipulator(siget(name))
+            self.manipulators_pool[name] = m
         return m
 
     @property
@@ -117,7 +117,7 @@ class Base(SIWrapper):
         self.state = False
         try:
             for anim in self.input.get("anim"):
-                self.get_man(anim).snap()
+                self.get_manipulator(anim.FullName).snap()
         except:
             raise  # re-raise the last exception
         finally:
