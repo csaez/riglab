@@ -1,7 +1,5 @@
 import os
-import sys
 import webbrowser
-# import json
 
 from PyQt4 import QtCore, QtGui, uic
 from wishlib.qt.QtGui import QMainWindow
@@ -11,6 +9,7 @@ from rigicon.layout.library_gui import RigIconLibrary
 
 from .. import riglab
 from .. import naming
+from .rename_solver import RenameSolver
 
 
 class MyDelegate(QtGui.QItemDelegate):
@@ -223,12 +222,14 @@ class Manager(QMainWindow):
             return
         si.SelectObj(self.active_rig.get_anim(self.active_group))
 
-    @progressbar()
-    def addsolver_clicked(self, solver):
+    def addsolver_clicked(self, solver_type):
         if self.active_group is None:
             return
-        self.active_rig.add_solver(solver, self.active_group)
-        self.reload_stack()
+        ok, data = RenameSolver.get_data(self, name=solver_type)
+        if ok:
+            self.active_rig.add_solver(
+                solver_type, self.active_group, name=data.name)
+            self.reload_stack()
 
     def removesolver_clicked(self, solver=None):
         if not self.active_solver:
@@ -270,8 +271,8 @@ class Manager(QMainWindow):
         pick = si.PickObject()("PickedElement")
         print pick
         if pick:
-            m.add_space(name=pick.Name, target=pick)
-            m.active_space = pick.Name
+            m.add_space(name=pick.FullName, target=pick)
+            m.active_space = pick.FullName
         self.reload_stack()
 
     def removespace_clicked(self):
@@ -468,8 +469,3 @@ class Manager(QMainWindow):
             if item.parent() is not None and not item.childCount():
                 return str(item.text(0))
         return None
-
-if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    Manager().show()
-    sys.exit(app.exec_())

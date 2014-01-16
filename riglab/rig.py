@@ -62,22 +62,37 @@ class Rig(SIWrapper):
         del self.groups[name]
         self.update()
 
-    def get_skeleton(self, group_name):
+    def get_skeleton(self, group_name=None):
+        # get rig's skeleton
+        if not group_name:
+            result = list()
+            for gn in self.groups.keys():
+                result.extend(self.get_skeleton(gn))
+            return result
+        # get by group
         if not self.groups.get(group_name):
-            return
-        skel = self.collect_from_solvers(
+            return []
+        skel = self._collect_from_solvers(
             group_name, lambda x: x.input["skeleton"])
         skel = set([x.FullName for x in skel])  # remove duplicates
         return [siget(x) for x in skel]
 
-    def get_anim(self, group_name):
+    def get_anim(self, group_name=None):
+        # get rig's anim
+        if not group_name:
+            result = list()
+            for gn in self.groups.keys():
+                result.extend(self.get_anim(gn))
+            return result
+        # get by group
         if not self.groups.get(group_name):
-            return
-        anim = self.collect_from_solvers(group_name, lambda x: x.input["anim"])
+            return []
+        anim = self._collect_from_solvers(
+            group_name, lambda x: x.input["anim"])
         anim = set([x.FullName for x in anim])  # remove duplicates
         return [siget(x) for x in anim]
 
-    def collect_from_solvers(self, group_name, query_function):
+    def _collect_from_solvers(self, group_name, query_function):
         """Utility function used to collect solver data in a group"""
         data = list()
         for solver_name in self.groups[group_name]["solvers"]:
@@ -85,7 +100,7 @@ class Rig(SIWrapper):
             data.extend(query_function(solver))
         return data
 
-    def add_solver(self, solver_type, group_name):
+    def add_solver(self, solver_type, group_name, name=None):
         if self.groups.get(group_name) is None or not hasattr(solvers, solver_type) or not sisel.Count:
             return
         # save selection
@@ -100,10 +115,12 @@ class Rig(SIWrapper):
             x.state = False
         self.apply_pose(1)
         # add solver
-        solver_name = self.unique_name(solver_type)
+        # if solver_name is not provided use solver_type
+        name = name or solver_type
+        name = self.unique_name(name)
         solver_class = getattr(solvers, solver_type)
         solver = solver_class.new(
-            skeleton, solver_name, self.holders["solvers"])
+            skeleton, name, self.holders["solvers"])
         self.solvers[solver.name] = solver.obj  # save solver root
         # groups
         self.groups[group_name]["solvers"].append(solver.name)
