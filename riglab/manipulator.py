@@ -4,7 +4,7 @@ from wishlib.si import si, siget, simath, SIWrapper
 from rigicon.icon import Icon
 
 from . import naming
-from . import bonetools
+from . import utils
 
 
 class Manipulator(SIWrapper):
@@ -125,7 +125,7 @@ class Manipulator(SIWrapper):
         if obj is not None:
             m4 = simath.CreateMatrix4(*self._snap_ref["offset"])
             m4.MulInPlace(obj.Kinematics.Global.Transform.Matrix4)
-            bonetools.align_matrix4(self.anim, m4)
+            utils.align_matrix4(self.anim, m4)
 
     @property
     def debug(self):

@@ -1,15 +1,17 @@
+import os
 from collections import namedtuple
-from os import path
-from wishlib.si import si
 
+from wishlib.si import si, siget
+
+from .joint import Joint
 from . import naming
 
-COMPOUND_DIR = path.join(path.dirname(__file__), "data", "compounds")
+COMPOUND_DIR = os.path.join(os.path.dirname(__file__), "data", "compounds")
 
 
 # HELPERS
 def curve_data(curve):
-    curvedata = path.join(COMPOUND_DIR, "riglab__SetCurveData.xsicompound")
+    curvedata = os.path.join(COMPOUND_DIR, "riglab__SetCurveData.xsicompound")
     ICE = si.ApplyICEOp(curvedata, curve, "")
     geo = curve.ActivePrimitive.Geometry
     matrices = geo.GetICEAttributeFromName("TM").DataArray2D[0][0]
@@ -17,16 +19,6 @@ def curve_data(curve):
     si.DeleteObj(ICE)
     data = (matrices, list(lengths) + [0.0])
     return namedtuple("CurveData", "matrices, lengths")._make(data)
-
-
-def style_null(null, length=0, size=0.25):
-    null.Parameters("primary_icon").Value = 2
-    null.Parameters("shadow_icon").Value = 4
-    null.Parameters("size").Value = size
-    null.Parameters("shadow_offsetX").Value = length / (2 * size)
-    null.Parameters("shadow_scaleX").Value = length / size
-    null.Parameters("shadow_scaleY").Value = 0.5
-    null.Parameters("shadow_scaleZ").Value = 0.25
 
 
 def rename_chain(chain, itemName, rule="3dobject"):
@@ -48,6 +40,25 @@ def deep(obj, d=0):
     if obj.Parent.FullName == si.ActiveSceneRoot.Name:
         return d
     return deep(obj.Parent, d + 1)
+
+
+def project_into_mesh(curve, mesh=None):
+    COMPOUND = "riglab__ProjectIntoMesh"
+    fp = os.path.join(COMPOUND_DIR, COMPOUND + ".xsicompound")
+    # apply ice op
+    o = si.ApplyICEOp(fp, curve, "")
+    cmp_name = o.FullName + "." + COMPOUND
+    # add a port per each curve's point
+    for _ in range(1, curve.ActivePrimitive.Geometry.Points.Count):
+        si.AddPortToICENode(
+            cmp_name + ".MaxDepth1", "siNodePortDataInsertionLocationAfter")
+    # set defaults
+    si.SetValue(cmp_name + ".MaxDepth*", 1)
+    mesh = mesh or si.PickObject()("PickedElement")
+    siget(cmp_name + ".Reference").Value = mesh.FullName
+    # inspect
+    if siget("preferences.Interaction.autoinspect").Value:
+        si.InspectObj(cmp_name)
 
 
 # CONVERTERS
@@ -72,8 +83,8 @@ def curve2null(curve, parent=None):
     result = list()
     for matrix, length in zip(*curve_data(curve)):
         parent = parent.AddNull()
-        style_null(parent, length=length)
         align_matrix4(parent, matrix)
+        Joint(parent, length=length, size=0.25)
         result.append(parent)
     return result
 
@@ -98,7 +109,7 @@ def chain2null(chain, parent=None):
     for bone in root.Bones:
         parent = parent.AddNull()
         parent.Kinematics.Global.Transform = bone.Kinematics.Global.Transform
-        style_null(parent, bone.Parameters("length").Value)
+        Joint(parent, length=bone.Parameters("length").Value, size=0.25)
         result.append(parent)
     result.append(parent.AddNull())
     result[-1].Kinematics.Global.Transform = root.Effector.Kinematics.Global.Transform

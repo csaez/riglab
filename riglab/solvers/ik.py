@@ -2,7 +2,7 @@ from wishlib.si import si, C
 
 from .base import Base
 from ..manipulator import Manipulator
-from .. import bonetools
+from .. import utils
 
 
 class IK(Base):
@@ -28,10 +28,10 @@ class IK(Base):
             ctrl.rename(self.name, i)
             self.helper.get("hidden").extend([ctrl.zero, ctrl.space])
         # align
-        data = bonetools.curve_data(self.helper["curve"])
-        bonetools.align_matrix4(anim_root.zero, data[0][0])
-        bonetools.align_matrix4(anim_eff.zero, data[0][-1])
-        bonetools.align_matrix4(anim_upv.zero, data[0][1])
+        data = utils.curve_data(self.helper["curve"])
+        utils.align_matrix4(anim_root.zero, data[0][0])
+        utils.align_matrix4(anim_eff.zero, data[0][-1])
+        utils.align_matrix4(anim_upv.zero, data[0][1])
         si.Translate(anim_upv.zero, 0, -data[1][0], 0, "siRelative", "siLocal")
         # save attributes
         self.input["anim"] = (anim_root.anim, anim_upv.anim, anim_eff.anim)
@@ -53,7 +53,7 @@ class IK(Base):
         # stretching
         kwds = {"root": self.input["anim"][0].FullName,
                 "eff": self.input["anim"][-1].FullName,
-                "total_length": sum(bonetools.curve_data(self.helper["curve"])[1]),
+                "total_length": sum(utils.curve_data(self.helper["curve"])[1]),
                 "stretch": self.input.get("stretch").FullName}
         expr = "COND({stretch} == 1, MAX(ctr_dist({root}., {eff}.) / {total_length}, 1), 1)"
         expr = expr.format(**kwds)
@@ -67,7 +67,7 @@ class IK(Base):
             self.input["skeleton"][-1])
 
     def _ikchain(self):
-        root = bonetools.curve2chain(self.helper.get("curve"),
+        root = utils.curve2chain(self.helper.get("curve"),
                                      parent=self.helper["root"])
         # rename
         root.Name = self.nm.qn(self.name + "Root", "jnt")

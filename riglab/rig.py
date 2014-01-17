@@ -1,7 +1,7 @@
 from wishlib.si import si, simath, siget, sisel, SIWrapper
 from . import naming
 from . import solvers
-from . import bonetools
+from . import utils
 
 
 class Rig(SIWrapper):
@@ -241,7 +241,7 @@ class Rig(SIWrapper):
 
     @skeleton.setter
     def skeleton(self, value):
-        self._skeleton = sorted(value, key=bonetools.deep)
+        self._skeleton = sorted(value, key=utils.deep)
         self.parent_to(self._skeleton, self.holders["skeleton"])
         self.update()
 
@@ -251,7 +251,7 @@ class Rig(SIWrapper):
 
     @meshes.setter
     def meshes(self, value):
-        self._meshes = sorted(value, key=bonetools.deep)
+        self._meshes = sorted(value, key=utils.deep)
         self.parent_to(self._meshes, self.holders["meshes"])
         self.update()
 

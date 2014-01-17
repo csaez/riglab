@@ -1,7 +1,7 @@
 from wishlib.si import si, siget, C, SIWrapper
 
 from .. import naming
-from .. import bonetools
+from .. import utils
 from ..manipulator import Manipulator
 
 
@@ -60,7 +60,7 @@ class Base(SIWrapper):
         si.Refresh()
 
     def create_anim(self):
-        self.helper["curve"] = bonetools.sel2curve(self.input.get("skeleton"),
+        self.helper["curve"] = utils.sel2curve(self.input.get("skeleton"),
                                                    parent=self.helper["root"])
         self.helper["curve"].Name = self.nm.qn(self.name, "curve")
         self.helper["hidden"].append(self.helper.get("curve"))
@@ -178,8 +178,8 @@ class Base(SIWrapper):
         pass
 
     def reversed(self):
-        first = bonetools.deep(self.input["skeleton"][0])
-        last = [bonetools.deep(x) for x in self.input["skeleton"][1:]]
+        first = utils.deep(self.input["skeleton"][0])
+        last = [utils.deep(x) for x in self.input["skeleton"][1:]]
         if first <= sum(last) / len(last):
             return False
         return True

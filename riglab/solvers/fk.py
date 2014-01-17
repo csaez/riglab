@@ -1,6 +1,6 @@
 from .base import Base
 from ..manipulator import Manipulator
-from .. import bonetools
+from .. import utils
 
 
 class FK(Base):
@@ -18,13 +18,13 @@ class FK(Base):
         if copies >= 1:
             anim.extend(anim[0].duplicate(copies))
         # align
-        data = zip(*bonetools.curve_data(self.helper.get("curve")))
-        bonetools.align_matrix4(anim[0].zero, data[0][0])
+        data = zip(*utils.curve_data(self.helper.get("curve")))
+        utils.align_matrix4(anim[0].zero, data[0][0])
         for i, (matrix, length) in enumerate(data[:-1]):
             m = anim[i]
             if i > 0:
                 m.parent = anim[i - 1].anim
-            bonetools.align_matrix4(m.zero, matrix)
+            utils.align_matrix4(m.zero, matrix)
             m.icon.sclx = length
         # rename
         for i, each in enumerate(anim):
