@@ -56,9 +56,9 @@ class Rig(SIWrapper):
         grp = self.groups.get(name)
         if not grp:
             return
-        for solver_name in grp["solvers"]:
-            self.get_solver(solver_name).destroy()
-            del self.solvers[solver_name]
+        for solver_id in grp["solvers"]:
+            self.get_solver(solver_id).destroy()
+            del self.solvers[solver_id]
         del self.groups[name]
         self.update()
 
@@ -95,12 +95,12 @@ class Rig(SIWrapper):
     def _collect_from_solvers(self, group_name, query_function):
         """Utility function used to collect solver data in a group"""
         data = list()
-        for solver_name in self.groups[group_name]["solvers"]:
-            solver = self.get_solver(solver_name)
+        for solver_id in self.groups[group_name]["solvers"]:
+            solver = self.get_solver(solver_id)
             data.extend(query_function(solver))
         return data
 
-    def add_solver(self, solver_type, group_name, name=None):
+    def add_solver(self, solver_type, group_name, name=None, side="C"):
         if self.groups.get(group_name) is None or not hasattr(solvers, solver_type) or not sisel.Count:
             return
         # save selection
@@ -117,44 +117,43 @@ class Rig(SIWrapper):
         # add solver
         # if solver_name is not provided use solver_type
         name = name or solver_type
-        name = self.unique_name(name)
+        side = str(side)
+        name = self.unique_name(name, side)
         solver_class = getattr(solvers, solver_type)
         solver = solver_class.new(
-            skeleton, name, self.holders["solvers"])
-        self.solvers[solver.name] = solver.obj  # save solver root
+            skeleton, name, self.holders["solvers"], side=side)
+        self.solvers[solver.id] = solver.obj  # save solver root
         # groups
-        self.groups[group_name]["solvers"].append(solver.name)
+        self.groups[group_name]["solvers"].append(solver.id)
         self.update()
         # restore stack states
         for i, x in enumerate(solver_stack):
             x.state = old_state[i]
-        # restore selection
-        si.SelectObj(skeleton)
-        # return solver
+        si.SelectObj(skeleton)  # restore selection
         return solver
 
-    def remove_solver(self, solver_name):
-        solver = self.get_solver(solver_name)
-        del self.solvers[solver_name]
+    def remove_solver(self, solver_id):
+        solver = self.get_solver(solver_id)
+        del self.solvers[solver_id]
         for k, v in self.groups.iteritems():
-            if solver_name in v["solvers"]:
-                v["solvers"] = [x for x in v["solvers"] if x != solver_name]
+            if solver_id in v["solvers"]:
+                v["solvers"] = [x for x in v["solvers"] if x != solver_id]
                 for name, state in v["states"].iteritems():
-                    del v["states"][name][solver.name]
+                    del v["states"][name][solver.id]
                 solver.destroy()
         self.update()
 
-    def get_solver(self, name):
+    def get_solver(self, solver_id):
         # look for the solver in cache
-        s = self.solvers_pool.get(name)
+        s = self.solvers_pool.get(solver_id)
         # if it's not there then reintantiate
         if s is None:  # not cached
-            obj = self.solvers.get(name)
+            obj = self.solvers.get(solver_id)
             if obj:
                 solver_class = SIWrapper(obj, "Solver_Data").classname
                 s = getattr(solvers, solver_class)(obj)
                 # add it to the pool
-                self.solvers_pool[name] = s
+                self.solvers_pool[solver_id] = s
         return s
 
     def save_state(self, group_name, name):
@@ -162,9 +161,9 @@ class Rig(SIWrapper):
         if grp is None:
             return
         data = {}
-        for solver_name in grp["solvers"]:
-            solver = self.get_solver(solver_name)
-            data[solver_name] = solver.state
+        for solver_id in grp["solvers"]:
+            solver = self.get_solver(solver_id)
+            data[solver_id] = solver.state
         grp["states"][name] = data
         self.update()
 
@@ -173,8 +172,8 @@ class Rig(SIWrapper):
         if not grp or not grp["states"].get(name):
             return
         # get solvers
-        solvers = [self.get_solver(solver_name)
-                   for solver_name in grp["solvers"]]
+        solvers = [self.get_solver(solver_id)
+                   for solver_id in grp["solvers"]]
         # save states
         old_state = list()
         for solver in solvers:
@@ -192,7 +191,7 @@ class Rig(SIWrapper):
 
         # apply new state
         for state_name, state_value in grp["states"][name].iteritems():
-            solver = [x for x in solvers if x.name == state_name][0]
+            solver = [x for x in solvers if x.id == state_name][0]
             solver.state = state_value
         grp["active"] = name
         self.update()
@@ -200,8 +199,8 @@ class Rig(SIWrapper):
         if si.GetValue("preferences.animation.autokey"):
             # manage keyframes
             current_frame = si.GetValue("PlayControl.Current")
-            for i, solver_name in enumerate(grp["solvers"]):
-                solver = self.get_solver(solver_name)
+            for i, solver_id in enumerate(grp["solvers"]):
+                solver = self.get_solver(solver_id)
                 param = (solver.input.get("active"),
                          solver.input.get("blendweight"))
                 si.SaveKeyOnKeyable(solver.input.get("anim"))
@@ -281,10 +280,10 @@ class Rig(SIWrapper):
             tm.SetMatrix4(simath.CreateMatrix4(m4))
             x.Kinematics.Global.Transform = tm
 
-    def unique_name(self, in_name, n=0):
+    def unique_name(self, in_name, in_side, n=0):
         with self.nm.override(rule="3dobject"):
             temp_name = in_name + str(n).zfill(2)
-            while self.obj.FindChildren2(self.nm.qn(temp_name + "Root", "group")).Count:
+            while self.obj.FindChildren2(self.nm.qn(temp_name + "Root", "group", side=in_side)).Count:
                 n += 1
                 temp_name = in_name + str(n).zfill(2)
         return temp_name

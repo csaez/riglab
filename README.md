@@ -1,13 +1,11 @@
 RigLab
 ======
-`riglab` is an open source (GPLv3) rigging framework for Softimage.
+`riglab` is an open source rigging framework for Softimage.
 
 Dependencies
 ------------
 - [PyQtForSoftimage](#)
 - [wishlib](#)
-- [nose](#)
-- [setuptools](#)
 
 Installation
 ------------
@@ -16,10 +14,10 @@ Installation
 
 or...
 
-- Install from the Python Package Index and copy `riglab_plugin.py` file
-to a Softimage plugin directory.
+- Clone the repo, copy `riglab_plugin.py` to a Softimage plugin directory
+and install the python packages typing in a terminal.
 
-    pip install riglab
+    python setup.py install
 
 Goals
 -----

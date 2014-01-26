@@ -1,7 +1,7 @@
 import os
 from collections import namedtuple
 
-from wishlib.si import si, siget
+from wishlib.si import si
 
 from .joint import Joint
 from . import naming
@@ -40,25 +40,6 @@ def deep(obj, d=0):
     if obj.Parent.FullName == si.ActiveSceneRoot.Name:
         return d
     return deep(obj.Parent, d + 1)
-
-
-def project_into_mesh(curve, mesh=None):
-    COMPOUND = "riglab__ProjectIntoMesh"
-    fp = os.path.join(COMPOUND_DIR, COMPOUND + ".xsicompound")
-    # apply ice op
-    o = si.ApplyICEOp(fp, curve, "")
-    cmp_name = o.FullName + "." + COMPOUND
-    # add a port per each curve's point
-    for _ in range(1, curve.ActivePrimitive.Geometry.Points.Count):
-        si.AddPortToICENode(
-            cmp_name + ".MaxDepth1", "siNodePortDataInsertionLocationAfter")
-    # set defaults
-    si.SetValue(cmp_name + ".MaxDepth*", 1)
-    mesh = mesh or si.PickObject()("PickedElement")
-    siget(cmp_name + ".Reference").Value = mesh.FullName
-    # inspect
-    if siget("preferences.Interaction.autoinspect").Value:
-        si.InspectObj(cmp_name)
 
 
 # CONVERTERS

@@ -3,13 +3,13 @@ import webbrowser
 
 from PyQt4 import QtCore, QtGui, uic
 from wishlib.qt.QtGui import QMainWindow
-from wishlib.qt.decorators import progressbar
 from wishlib.si import si, sisel, show_qt
 from rigicon.layout.library_gui import RigIconLibrary
 
 from .. import riglab
 from .. import naming
-from .rename_solver import RenameSolver
+from .rename import Rename
+from .shape_color import ShapeColor
 
 
 class MyDelegate(QtGui.QItemDelegate):
@@ -92,6 +92,7 @@ class Manager(QMainWindow):
         # extras signals
         self.ui.namingConvention.triggered.connect(
             lambda: show_qt(naming.editor.Editor))
+        self.ui.shapeColor.triggered.connect(lambda: show_qt(ShapeColor))
         self.ui.rigiconLibrary.triggered.connect(
             lambda: show_qt(RigIconLibrary))
         self.ui.docs.triggered.connect(
@@ -105,12 +106,19 @@ class Manager(QMainWindow):
 
     # SLOTS
     def renameitem_clicked(self, model_index):
+        # enabled just for groups
+        if not self.active_group:
+            return
         item = self.ui.stack.currentItem()
         current_name = str(item.text(0))
-        new_name, ok = QtGui.QInputDialog.getText(
-            self, "Rename item", "", text=current_name)
-        new_name = str(new_name)
-        if not ok and not len(new_name):
+        split_name = current_name.split("_")
+        data = self.get_name(default_name=split_name[0],
+                             default_side=split_name[1])
+        if not data or not len(data.name):
+            return
+        # define new group name
+        new_name = data.name + "_" + data.side
+        if current_name == new_name:
             return
         if item.parent() is None:  # group
             self.active_rig.groups[
@@ -121,9 +129,9 @@ class Manager(QMainWindow):
             s = self.active_rig.get_solver(current_name)
             # update states
             for k, v in self.active_rig.groups[grp_name]["states"].iteritems():
-                if not v.get(s.name):
+                if not v.get(s.id):
                     continue
-                v[new_name] = v[s.name]
+                v[new_name] = v[s.id]
             # rename
             s.name = new_name
         self.reload_stack()
@@ -157,10 +165,14 @@ class Manager(QMainWindow):
         self.reload_stack()
 
     def addgroup_clicked(self):
-        name, ok = QtGui.QInputDialog.getText(self, "Add Group", "Group name:")
-        name = str(name)
-        if not ok or not len(name):
+        data = self.get_name()
+        if not data or not len(data.name):
             return
+        name = data.name + "_" + data.side
+        # name, ok = QtGui.QInputDialog.getText(self, "Add Group", "Group name:")
+        # name = str(name)
+        # if not ok or not len(name):
+        #     return
         self.active_rig.add_group(name)
         self.reload_stack()
 
@@ -225,10 +237,11 @@ class Manager(QMainWindow):
     def addsolver_clicked(self, solver_type):
         if self.active_group is None:
             return
-        ok, data = RenameSolver.get_data(self, name=solver_type)
-        if ok:
+        print self.active_group
+        data = self.get_name(solver_type, self.active_group.split("_")[-1])
+        if data and len(data.name):
             self.active_rig.add_solver(
-                solver_type, self.active_group, name=data.name)
+                solver_type, self.active_group, name=data.name, side=data.side)
             self.reload_stack()
 
     def removesolver_clicked(self, solver=None):
@@ -397,9 +410,9 @@ class Manager(QMainWindow):
                 except ValueError:
                     pass
             # add solver
-            for solver_name in v["solvers"]:
-                solver = self.active_rig.get_solver(solver_name)
-                s = QtGui.QTreeWidgetItem((solver.name, ""))
+            for solver_id in v["solvers"]:
+                solver = self.active_rig.get_solver(solver_id)
+                s = QtGui.QTreeWidgetItem((solver.id, ""))
                 s.setIcon(0, ICON(solver.classname.lower()))
                 group.addChild(s)
                 s.setCheckState(1, 2 if solver.state else 0)
@@ -468,4 +481,11 @@ class Manager(QMainWindow):
         if self.active_rig and item:
             if item.parent() is not None and not item.childCount():
                 return str(item.text(0))
+        return None
+
+    def get_name(self, default_name=None, default_side="C"):
+        ok, data = Rename.get_data(
+            parent=self, name=default_name, side=default_side)
+        if ok:
+            return data
         return None

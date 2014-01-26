@@ -18,10 +18,12 @@ class IK(Base):
         # create
         anim_root = Manipulator.new(parent=self.input.get("root"))
         anim_root.owner = {"obj": self.obj, "class": self.classname}
-        anim_root.icon.shape = "Rounded_Square"
+        anim_root.icon.shape = self.shape_color.get("ikIcon")
+        anim_root.icon.color = self.shape_color.get(self.side)[0]
         anim_eff, anim_upv = anim_root.duplicate(2)  # OPTIMIZATION
         anim_eff.icon.connect = anim_root.anim
-        anim_upv.icon.shape = "Rings"
+        anim_upv.icon.shape = self.shape_color.get("upIcon")
+        anim_upv.icon.color = self.shape_color.get(self.side)[1]
         anim_upv.icon.size = 0.25
         anim_upv.icon.connect = self.input.get("skeleton")[1]
         for i, ctrl in enumerate((anim_root, anim_upv, anim_eff)):

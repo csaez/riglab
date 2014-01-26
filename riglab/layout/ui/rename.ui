@@ -40,7 +40,14 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QComboBox" name="side"/>
+      <widget class="QComboBox" name="side">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -73,8 +80,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>244</x>
+     <y>91</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -89,8 +96,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>244</x>
+     <y>91</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

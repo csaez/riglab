@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>327</width>
+    <width>364</width>
     <height>450</height>
    </rect>
   </property>
@@ -39,7 +39,7 @@
        <bool>false</bool>
       </property>
       <attribute name="headerDefaultSectionSize">
-       <number>200</number>
+       <number>250</number>
       </attribute>
       <column>
        <property name="text">
@@ -60,7 +60,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>327</width>
+     <width>364</width>
      <height>21</height>
     </rect>
    </property>
@@ -116,15 +116,6 @@
      <addaction name="saveTemplate"/>
      <addaction name="loadTemplate"/>
     </widget>
-    <widget class="QMenu" name="stateMenu">
-     <property name="title">
-      <string>Group State</string>
-     </property>
-     <addaction name="addState"/>
-     <addaction name="removeState"/>
-     <addaction name="separator"/>
-     <addaction name="autoSnap"/>
-    </widget>
     <widget class="QMenu" name="addBehaviour">
      <property name="title">
       <string>Add Behaviour</string>
@@ -134,23 +125,24 @@
      <addaction name="separator"/>
      <addaction name="addSplineIK"/>
     </widget>
-    <addaction name="stateMenu"/>
     <addaction name="addGroup"/>
     <addaction name="removeGroup"/>
     <addaction name="separator"/>
     <addaction name="addBehaviour"/>
     <addaction name="templateMenu"/>
+    <addaction name="addState"/>
+    <addaction name="removeState"/>
+    <addaction name="autoSnap"/>
     <addaction name="separator"/>
     <addaction name="groupManipulators"/>
     <addaction name="groupSkeleton"/>
    </widget>
    <widget class="QMenu" name="extrasMenu">
     <property name="title">
-     <string>Extras</string>
+     <string>Preferences</string>
     </property>
     <addaction name="namingConvention"/>
-    <addaction name="separator"/>
-    <addaction name="rigiconConvention"/>
+    <addaction name="shapeColor"/>
     <addaction name="rigiconLibrary"/>
     <addaction name="separator"/>
     <addaction name="docs"/>
@@ -270,12 +262,12 @@
   </action>
   <action name="removeState">
    <property name="text">
-    <string>Remove</string>
+    <string>Remove State...</string>
    </property>
   </action>
   <action name="addState">
    <property name="text">
-    <string>Save as...</string>
+    <string>Save State...</string>
    </property>
   </action>
   <action name="setSkeleton">
@@ -343,9 +335,9 @@
     <string>RigIcon Library</string>
    </property>
   </action>
-  <action name="rigiconConvention">
+  <action name="shapeColor">
    <property name="text">
-    <string>RigIcon Convention</string>
+    <string>Shape and Colors</string>
    </property>
   </action>
   <action name="actionAbout_2">

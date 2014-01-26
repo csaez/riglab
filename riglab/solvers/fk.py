@@ -12,7 +12,9 @@ class FK(Base):
         super(FK, self).custom_build()
         anim = [Manipulator.new(parent=self.input.get("root"))]
         anim[0].owner = {"obj": self.obj, "class": self.classname}
-        anim[0].icon.shape = "Box_Bone2"  # TODO: replace by config file
+        # apply shape and color from convention
+        anim[0].icon.shape = self.shape_color.get("fkIcon")
+        anim[0].icon.color = self.shape_color.get(self.side)[0]
         # OPTIMIZATION: duplicate instead of create a new one
         copies = len(self.input.get("skeleton")) - 2
         if copies >= 1:
@@ -28,7 +30,7 @@ class FK(Base):
             m.icon.sclx = length
         # rename
         for i, each in enumerate(anim):
-            each.rename(self.name, i)
+            each.rename(self.name, i, side=self.side)
             self.input.get("anim").append(each.anim)
             self.helper.get("hidden").extend([each.zero, each.space])
         self.input["anim"] = [x.anim for x in anim]

@@ -1,4 +1,7 @@
+import os
+
 from wishlib.si import si, siget, C, SIWrapper
+from wishlib.utils import JSONDict
 
 from .. import naming
 from .. import utils
@@ -9,6 +12,8 @@ class Base(SIWrapper):
     # naming manager
     nm = naming.Manager()
     nm.rule = "3dobject"
+    shape_color = JSONDict(
+        os.path.join(os.path.expanduser("~"), "riglab", "shape_color.json"))
 
     def __init__(self, obj):
         self.classname = self.__class__.__name__
@@ -61,7 +66,7 @@ class Base(SIWrapper):
 
     def create_anim(self):
         self.helper["curve"] = utils.sel2curve(self.input.get("skeleton"),
-                                                   parent=self.helper["root"])
+                                               parent=self.helper["root"])
         self.helper["curve"].Name = self.nm.qn(self.name, "curve")
         self.helper["hidden"].append(self.helper.get("curve"))
         self.custom_anim()
@@ -124,7 +129,7 @@ class Base(SIWrapper):
             self.state = state
 
     @classmethod
-    def new(cls, skeleton, name=None, root=None):
+    def new(cls, skeleton, name=None, root=None, side="C"):
         if not cls.validate(skeleton):
             return
         root = root or si.ActiveSceneRoot
@@ -132,16 +137,19 @@ class Base(SIWrapper):
         # solver objs
         obj = root.AddNull()
         s = cls(obj)
+        s.side = side
         s.name = name
         s.output["root"] = obj.AddNull()
         s.helper["root"] = obj.AddNull()
         s.input["root"] = obj.AddNull()
         # rename
         cls.nm.rule = "3dobject"
-        s.obj.Name = cls.nm.qn(s.name + "Root", "group")
-        s.output["root"].Name = cls.nm.qn(s.name + "Output", "group")
-        s.helper["root"].Name = cls.nm.qn(s.name + "Helper", "group")
-        s.input["root"].Name = cls.nm.qn(s.name + "Input", "group")
+        s.obj.Name = cls.nm.qn(s.name + "Root", "group", side=side)
+        s.output["root"].Name = cls.nm.qn(
+            s.name + "Output", "group", side=side)
+        s.helper["root"].Name = cls.nm.qn(
+            s.name + "Helper", "group", side=side)
+        s.input["root"].Name = cls.nm.qn(s.name + "Input", "group", side=side)
         # add to hidden list
         s.helper.get("hidden").extend([s.obj, s.input.get("root"),
                                        s.output.get("root"),
@@ -183,3 +191,14 @@ class Base(SIWrapper):
         if first <= sum(last) / len(last):
             return False
         return True
+
+    @property
+    def id(self):
+        return self.name + "_" + self.side
+
+    @id.setter
+    def id(self, value):
+        splited = value.split("_")
+        if len(splited) == 2:
+            self.name = splited[0]
+            self.side = splited[1]
