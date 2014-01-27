@@ -1,13 +1,17 @@
-from wishlib.si import log, C, show_qt
+from wishlib.si import si, sisel, log, C, show_qt
 
 
 def XSILoadPlugin(in_reg):
-    in_reg.Name = "riglab_plugin"
+    in_reg.Name = "RigLab Plugin"
     in_reg.Author = "csaez"
     in_reg.Major = 1.0
     in_reg.Minor = 0.0
     in_reg.UserData = ""
-    in_reg.RegisterCommand("riglab", "riglab")
+    in_reg.RegisterCommand("RigLab Editor", "riglab")
+    in_reg.RegisterCommand("Curve To Nulls", "curve2null")
+    in_reg.RegisterCommand("Nulls To Curve", "null2curve")
+    in_reg.RegisterCommand("Align Nulls To Curve", "align2curve")
+    in_reg.RegisterCommand("Draw Linear Curve Into Mesh", "draw_linear_curve")
     return True
 
 
@@ -16,8 +20,38 @@ def XSIUnloadPlugin(in_reg):
     return True
 
 
-def riglab_Execute():
-    log("riglabLibrary_Execute called", C.siVerbose)
+def RigLabEditor_Execute():
+    log("RigLabEditor_Execute called", C.siVerbose)
     from riglab.layout.manager import Manager
     show_qt(Manager)
+    return True
+
+
+def CurveToNulls_Execute():
+    log("CurvetoNulls_Execute called", C.siVerbose)
+    from riglab.utils import curve2null
+    si.SelectObj(curve2null(sisel(0)))
+    return True
+
+
+def NullsToCurve_Execute():
+    log("CurvetoNulls_Execute called", C.siVerbose)
+    from riglab.utils import sel2curve
+    si.SelectObj(sel2curve(list(sisel)))
+    return True
+
+
+def AlignNullsToCurve_Execute():
+    log("AlignNullsToCurve_Execute called", C.siVerbose)
+    from riglab.utils import align2curve
+    curve = si.PickObject()("PickedElement")
+    if curve:
+        align2curve(sisel, curve)
+    return True
+
+
+def DrawLinearCurveIntoMesh_Execute():
+    log("DrawLinearCurveIntoMesh_Execute called", C.siVerbose)
+    from riglab.utils import draw_linear_curve
+    draw_linear_curve(sisel)
     return True

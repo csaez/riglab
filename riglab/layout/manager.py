@@ -237,7 +237,6 @@ class Manager(QMainWindow):
     def addsolver_clicked(self, solver_type):
         if self.active_group is None:
             return
-        print self.active_group
         data = self.get_name(solver_type, self.active_group.split("_")[-1])
         if data and len(data.name):
             self.active_rig.add_solver(
