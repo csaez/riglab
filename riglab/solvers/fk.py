@@ -20,14 +20,17 @@ class FK(Base):
         if copies >= 1:
             anim.extend(anim[0].duplicate(copies))
         # align
-        data = zip(*utils.curve_data(self.helper.get("curve")))
-        utils.align_matrix4(anim[0].zero, data[0][0])
-        for i, (matrix, length) in enumerate(data[:-1]):
-            m = anim[i]
-            if i > 0:
-                m.parent = anim[i - 1].anim
-            utils.align_matrix4(m.zero, matrix)
-            m.icon.sclx = length
+        if self.helper.get("curve"):
+            data = zip(*utils.curve_data(self.helper.get("curve")))
+            utils.align_matrix4(anim[0].zero, data[0][0])
+            for i, (matrix, length) in enumerate(data[:-1]):
+                m = anim[i]
+                if i > 0:
+                    m.parent = anim[i - 1].anim
+                utils.align_matrix4(m.zero, matrix)
+                m.icon.sclx = length
+        else:  # align with the first bone
+            anim[0].align(self.input["skeleton"][0])
         # rename
         for i, each in enumerate(anim):
             each.rename(self.name, i, side=self.side)
@@ -37,9 +40,11 @@ class FK(Base):
 
     def custom_build(self):
         super(FK, self).custom_build()
-        skeleton = self.input.get("skeleton")[:-1]
-        if self.reversed():
-            skeleton = self.input.get("skeleton")[1:]
+        skeleton = self.input.get("skeleton")
+        if len(skeleton) > 1:
+            skeleton = self.input.get("skeleton")[:-1]
+            if self.reversed():
+                skeleton = self.input.get("skeleton")[1:]
         for i, bone in enumerate(skeleton):
             anim = self.input["anim"][i]
             self.output["tm"][i].Kinematics.AddConstraint("Pose", anim)
@@ -51,4 +56,4 @@ class FK(Base):
 
     @staticmethod
     def validate(skeleton):
-        return len(skeleton) > 1
+        return len(skeleton) >= 1

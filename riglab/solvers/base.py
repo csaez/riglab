@@ -37,7 +37,9 @@ class Base(SIWrapper):
         self.input["skeleton"] = list(skeleton)
 
         # init
-        limit = len(self.input.get("skeleton")) - 1
+        limit = len(self.input.get("skeleton"))
+        if limit > 1:
+            limit -= 1
         for i, bone in enumerate(self.input.get("skeleton")):
             # set bone params
             for param in ("cnsscl", "pivotactive", "pivotcompactive"):
@@ -65,14 +67,19 @@ class Base(SIWrapper):
         si.Refresh()
 
     def create_anim(self):
-        self.helper["curve"] = utils.sel2curve(self.input.get("skeleton"),
-                                               parent=self.helper["root"])
-        self.helper["curve"].Name = self.nm.qn(self.name, "curve")
-        self.helper["hidden"].append(self.helper.get("curve"))
+        if len(self.input.get("skeleton")) > 1:
+            # create a curve from skeleton
+            self.helper["curve"] = utils.sel2curve(
+                self.input.get("skeleton"), parent=self.helper["root"])
+            self.helper["curve"].Name = self.nm.qn(self.name, "curve")
+            self.helper["hidden"].append(self.helper.get("curve"))
         self.custom_anim()
 
     def connect(self, compensate=True):
-        for i, bone in enumerate(self.input.get("skeleton")[:-1]):
+        skeleton = self.input.get("skeleton")
+        if len(skeleton) > 1:
+            skeleton = skeleton[:-1]
+        for i, bone in enumerate(skeleton):
             target = self.output.get("tm")[i]
             cns = bone.Kinematics.AddConstraint("Pose", target, compensate)
             for param in ("active", "blendweight"):
@@ -80,7 +87,10 @@ class Base(SIWrapper):
                 cns.Parameters(param).AddExpression(expr)
 
     def connect_reverse(self, compensate=True):
-        for i, bone in enumerate(self.input.get("skeleton")[1:]):
+        skeleton = self.input.get("skeleton")
+        if len(skeleton) > 1:
+            skeleton = skeleton[1:]
+        for i, bone in enumerate(skeleton):
             target = self.output.get("tm")[i]
             cns = bone.Kinematics.AddConstraint("Pose", target, compensate)
             for param in ("active", "blendweight"):
@@ -186,6 +196,8 @@ class Base(SIWrapper):
         pass
 
     def reversed(self):
+        if len(self.input["skeleton"]) == 1:
+            return False
         first = utils.deep(self.input["skeleton"][0])
         last = [utils.deep(x) for x in self.input["skeleton"][1:]]
         if first <= sum(last) / len(last):
