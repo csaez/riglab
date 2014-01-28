@@ -18,9 +18,9 @@ class MyDelegate(QtGui.QItemDelegate):
         return QtCore.QSize(32, 32)
 
 
-class Manager(QMainWindow):
+class Editor(QMainWindow):
 
-    MODES = ("Deformation", "Rigging")  # table matching Rig() indices
+    MODES = ("Binding", "Animation")  # table matching Rig() indices
     IMAGES = {"check": "iconmonstr-check-mark-icon-256.png",
               "group": "iconmonstr-folder-icon-256.png",
               "ik": "iconmonstr-backarrow-59-icon-256.png",
@@ -30,7 +30,7 @@ class Manager(QMainWindow):
         IMAGES[k] = os.path.join(os.path.dirname(__file__), "ui", "images", v)
 
     def __init__(self, parent=None):
-        super(Manager, self).__init__(parent)
+        super(Editor, self).__init__(parent)
         self.riglab = riglab.RigLab()
         self._clipboard = None
         self._mute = False
@@ -39,7 +39,7 @@ class Manager(QMainWindow):
 
     def initUI(self):
         ui_dir = os.path.join(os.path.dirname(__file__), "ui")
-        self.ui = uic.loadUi(os.path.join(ui_dir, "manager.ui"), self)
+        self.ui = uic.loadUi(os.path.join(ui_dir, "editor.ui"), self)
         # resize stack via a delegate
         delegate = MyDelegate()
         self.ui.stack.setItemDelegate(delegate)

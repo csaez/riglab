@@ -139,7 +139,7 @@
    </widget>
    <widget class="QMenu" name="extrasMenu">
     <property name="title">
-     <string>Preferences</string>
+     <string>Config</string>
     </property>
     <addaction name="namingConvention"/>
     <addaction name="shapeColor"/>
@@ -277,17 +277,17 @@
   </action>
   <action name="deformationMode">
    <property name="text">
-    <string>Deformation</string>
+    <string>Binding</string>
    </property>
   </action>
   <action name="riggingMode">
    <property name="text">
-    <string>Rigging</string>
+    <string>Animation</string>
    </property>
   </action>
   <action name="savePose">
    <property name="text">
-    <string>Save current pose</string>
+    <string>Save Current Pose</string>
    </property>
   </action>
   <action name="defaultGroup">
