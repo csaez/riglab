@@ -1,7 +1,8 @@
 import os
+from math import pi
 from collections import namedtuple
 
-from wishlib.si import si, C, sisel, siget, project_into_mesh
+from wishlib.si import si, C, sisel, siget, project_into_mesh, simath
 
 from .joint import Joint
 from . import naming
@@ -93,6 +94,19 @@ def align2curve(objs, curve):
             return
         align_matrix4(obj, matrix)
         Joint(obj, length=length, size=0.25)
+
+
+def orthogonalize(obj):
+    tm = obj.Kinematics.Global.Transform
+    r = tm.Rotation
+    v = simath.CreateVector3()
+    r.GetXYZAngles(v)
+    a = list()
+    for x in v.Get2():
+        a.append(pi / 2.0 * x / abs(x) if abs(x) > pi / 4.0 else 0)
+    r.SetFromXYZAngles(simath.CreateVector3(*a))
+    tm.SetRotation(r)
+    obj.Kinematics.Global.Transform = tm
 
 
 # CONVERTERS

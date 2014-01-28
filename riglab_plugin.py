@@ -11,6 +11,7 @@ def XSILoadPlugin(in_reg):
     in_reg.RegisterCommand("Curve To Nulls", "curve2null")
     in_reg.RegisterCommand("Nulls To Curve", "null2curve")
     in_reg.RegisterCommand("Align Nulls To Curve", "align2curve")
+    in_reg.RegisterCommand("Orthogonalize Selection", "orthogonalize")
     in_reg.RegisterCommand("Draw Linear Curve Into Mesh", "draw_linear_curve")
     return True
 
@@ -22,8 +23,8 @@ def XSIUnloadPlugin(in_reg):
 
 def RigLabEditor_Execute():
     log("RigLabEditor_Execute called", C.siVerbose)
-    from riglab.layout.manager import Manager
-    show_qt(Manager)
+    from riglab.layout.editor import Editor
+    show_qt(Editor)
     return True
 
 
@@ -35,7 +36,7 @@ def CurveToNulls_Execute():
 
 
 def NullsToCurve_Execute():
-    log("CurvetoNulls_Execute called", C.siVerbose)
+    log("NullsToCurve_Execute called", C.siVerbose)
     from riglab.utils import sel2curve
     si.SelectObj(sel2curve(list(sisel)))
     return True
@@ -54,4 +55,12 @@ def DrawLinearCurveIntoMesh_Execute():
     log("DrawLinearCurveIntoMesh_Execute called", C.siVerbose)
     from riglab.utils import draw_linear_curve
     draw_linear_curve(sisel)
+    return True
+
+
+def OrthogonalizeSelection_Execute():
+    log("OrthogonalizeSelection_Execute called", C.siVerbose)
+    from riglab.utils import orthogonalize, deep
+    for obj in sorted(list(sisel), key=deep):
+        orthogonalize(obj)
     return True
