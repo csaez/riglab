@@ -1,5 +1,5 @@
+import naming
 from wishlib.si import si
-from . import naming
 from . import rig
 
 

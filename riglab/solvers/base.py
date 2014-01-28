@@ -1,9 +1,9 @@
 import os
 
+import naming
 from wishlib.si import si, siget, C, SIWrapper
 from wishlib.utils import JSONDict
 
-from .. import naming
 from .. import utils
 from ..manipulator import Manipulator
 

@@ -6,11 +6,14 @@ Dependencies
 ------------
 - [PyQtForSoftimage](#)
 - [wishlib](#)
+- [rigicon](#)
+- [naming](#)
 
 Installation
 ------------
 
-- Get a xsiaddon file from [here](#) and drop it on a softimage viewport.
+- Get a xsiaddon file from [here](#) and drop it on a softimage viewport
+(includes wishlib, rigicon and naming modules).
 
 or...
 

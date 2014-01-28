@@ -33,3 +33,8 @@
 2014-01-16 21:19:16     8651  +958  -125 db282e5 cesarte@gmail.com 	bonetools -> utils
 2014-01-26 17:49:09     9056  +672  -267 e835f8c cesarte@gmail.com 	shapes+color convention
 2014-01-26 22:03:32     9083   +36    -9 9086e0a cesarte@gmail.com 	BUGFIX: roll value is now properly determined
+2014-01-26 22:04:50     9117   +35    -1 ecc7f56 cesarte@gmail.com 	project history updated
+2014-01-27 11:01:13     9134   +36   -19 d0eb242 cesarte@gmail.com 	single bone fk suppport
+2014-01-27 13:31:29     9220   +93    -7 7c51c04 cesarte@gmail.com 	Joint utils as commands
+2014-01-27 22:55:02     9220  +929  -929 9a0da42 cesarte@gmail.com 	manager -> editor
+2014-01-27 22:55:43     9243   +27    -4 67c1c4e cesarte@gmail.com 	orthogonalize utility

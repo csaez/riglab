@@ -1,9 +1,9 @@
 import os
 
-from wishlib.si import si, siget, simath, SIWrapper
+import naming
 from rigicon.icon import Icon
+from wishlib.si import si, siget, simath, SIWrapper
 
-from . import naming
 from . import utils
 
 

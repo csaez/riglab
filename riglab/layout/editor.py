@@ -1,13 +1,13 @@
 import os
 import webbrowser
 
+import naming
 from PyQt4 import QtCore, QtGui, uic
 from wishlib.qt.QtGui import QMainWindow
 from wishlib.si import si, sisel, show_qt
 from rigicon.layout.library_gui import RigIconLibrary
 
 from .. import riglab
-from .. import naming
 from .rename import Rename
 from .shape_color import ShapeColor
 
@@ -91,7 +91,7 @@ class Editor(QMainWindow):
         self.ui.manVisibility.triggered.connect(self.manvisibility_clicked)
         # extras signals
         self.ui.namingConvention.triggered.connect(
-            lambda: show_qt(naming.editor.Editor))
+            lambda: show_qt(naming.Editor, force_style=True))
         self.ui.shapeColor.triggered.connect(lambda: show_qt(ShapeColor))
         self.ui.rigiconLibrary.triggered.connect(
             lambda: show_qt(RigIconLibrary))

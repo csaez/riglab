@@ -1,5 +1,5 @@
+import naming
 from wishlib.si import si, simath, siget, sisel, SIWrapper
-from . import naming
 from . import solvers
 from . import utils
 

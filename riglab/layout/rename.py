@@ -3,8 +3,7 @@ from collections import namedtuple
 
 from PyQt4 import uic
 from PyQt4.QtGui import QDialog
-
-from ..naming import Manager as nm
+from naming import Manager as nm
 
 
 class Rename(QDialog):

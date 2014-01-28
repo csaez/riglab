@@ -2,10 +2,10 @@ import os
 from math import pi
 from collections import namedtuple
 
+import naming
 from wishlib.si import si, C, sisel, siget, project_into_mesh, simath
 
 from .joint import Joint
-from . import naming
 
 COMPOUND_DIR = os.path.join(os.path.dirname(__file__), "data", "compounds")
 
