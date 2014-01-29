@@ -129,14 +129,14 @@ class Base(SIWrapper):
 
     def snap(self):
         state = self.state
-        self.state = False
-        try:
-            for anim in self.input.get("anim"):
+        if state:
+            self.state = False
+        for anim in self.input.get("anim"):
+            try:
                 self.get_manipulator(anim.FullName).snap()
-        except:
-            raise  # re-raise the last exception
-        finally:
-            self.state = state
+            except Exception, err:
+                print "ERROR:", err  # re-raise the last exception
+        self.state = state
 
     @classmethod
     def new(cls, skeleton, name=None, root=None, side="C"):

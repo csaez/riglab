@@ -64,15 +64,15 @@ def _get_coord(meshes=None):
 def draw_linear_curve(meshes=None):
     # collect meshes
     meshes = list(meshes) or list(sisel)
-    if not len(meshes):
-        msj = "Please pick the polymesh you want to draw into."
-        meshes = list()
-        picked = si.PickElement(C.siPolyMeshFilter, msj)("PickedElement")
-        while picked:
-            if picked.FullName not in meshes:
-                meshes.append(picked.FullName)
-            picked = si.PickElement(C.siPolyMeshFilter, msj)("PickedElement")
-        meshes = map(siget, meshes)
+    # if not len(meshes):
+    #     msj = "Please pick the polymesh you want to draw into."
+    #     meshes = list()
+    #     picked = si.PickElement(C.siPolyMeshFilter, msj)("PickedElement")
+    #     while picked:
+    #         if picked.FullName not in meshes:
+    #             meshes.append(picked.FullName)
+    #         picked = si.PickElement(C.siPolyMeshFilter, msj)("PickedElement")
+    #     meshes = map(siget, meshes)
     # get initial point
     coord = _get_coord(meshes)
     if coord:

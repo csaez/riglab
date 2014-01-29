@@ -1,5 +1,9 @@
+import itertools
+import collections
+
 import naming
 from wishlib.si import si, simath, siget, sisel, SIWrapper
+
 from . import solvers
 from . import utils
 
@@ -48,8 +52,9 @@ class Rig(SIWrapper):
         self.solvers_pool = dict()
 
     def add_group(self, name):
-        self.groups[name] = {
-            "solvers": list(), "states": dict(), "active": None}
+        self.groups[name] = {"solvers": list(),
+                             "states": dict(),
+                             "active": None}
         self.update()
 
     def remove_group(self, name):
@@ -156,6 +161,25 @@ class Rig(SIWrapper):
                 self.solvers_pool[solver_id] = s
         return s
 
+    def get_solvers(self, group_name=None):
+        if group_name and self.groups.get(group_name):
+            return [self.get_solver(x) for x in self.groups.get("leg_L").get("solvers")]
+        return [self.get_solver(x) for x in self.solvers.keys()]
+
+    def get_dependencies(self, solver):
+        result = list()
+        for a in solver.input.get("anim"):
+            n = solver.get_manipulator(a.FullName).active_space
+            if n == "default":
+                continue
+            m = solver.get_manipulator(n)
+            if not m or not m.owner.get("obj"):
+                continue
+            n = m.owner.get("obj").Name.split("_")
+            solver_id = n[0].replace("Root", "") + "_" + n[2]
+            result.append(self.get_solver(solver_id))
+        return result
+
     def save_state(self, group_name, name):
         grp = self.groups.get(group_name)
         if grp is None:
@@ -178,17 +202,18 @@ class Rig(SIWrapper):
         old_state = list()
         for solver in solvers:
             old_state.append(solver.state)
-
-        # ==============
-        # BUG: Fix snap
-        # Fails on FK->IK when using manipulators with custom spaces
-        # ==============
         if snap:
-            # map(lambda s: s.snap(), solvers)
-            for s in solvers:
-                for _ in range(1):
-                    s.snap()
-
+            # sort dependencies
+            l = list()
+            deps = dict([(s.id, [x.id for x in self.get_dependencies(s)])
+                         for s in solvers])
+            for d in deps.values():
+                l.extend(d)
+                for solver_id in d:
+                    l.extend(deps.get(solver_id))
+            c = collections.Counter(l)
+            for solver_id in sorted(deps.keys(), key=lambda x: c[x], reverse=True):
+                self.get_solver(solver_id).snap()  # snap
         # apply new state
         for state_name, state_value in grp["states"][name].iteritems():
             solver = [x for x in solvers if x.id == state_name][0]
@@ -219,11 +244,12 @@ class Rig(SIWrapper):
         return data
 
     def load_data(self, group_name, data):
-        self.add_group(group_name)
-        for d in data["solvers"]:
-            self.groups[group_name]["solvers"].append(
-                solver.Solver.from_data(d))
-        self.groups[group_name]["states"] = data["states"].copy()
+        pass
+        # self.add_group(group_name)
+        # for d in data["solvers"]:
+        #     self.groups[group_name]["solvers"].append(
+        #         solver.Solver.from_data(d))
+        # self.groups[group_name]["states"] = data["states"].copy()
 
     @property
     def mode(self):
@@ -231,8 +257,24 @@ class Rig(SIWrapper):
 
     @mode.setter
     def mode(self, value):
-        self._mode = value
-        self.apply_pose(value)
+        # _snapshot stores the solver states in order to switch modes
+        if not hasattr(self, "_snapshot"):
+            self._snapshot = dict()
+        # manage states
+        for id in self.solvers:
+            solver = self.get_solver(id)
+            # take a snapshot and disable solver
+            if value == 0 and value != self._mode:
+                self._snapshot[id] = solver.state
+                solver.state = False
+            # restore state
+            else:
+                snapshot = self._snapshot.get(id)
+                if snapshot:
+                    solver.state = snapshot
+        self._mode = value  # update internal var
+        self.apply_pose(value)  # apply pose
+        self.update()  # update siwrapper
 
     @property
     def skeleton(self):

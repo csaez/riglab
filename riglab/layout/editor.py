@@ -207,7 +207,7 @@ class Editor(QMainWindow):
         if not len(states):
             return
         n, ok = QtGui.QInputDialog.getItem(
-            self, "Remove State", "States:", states, 0, False)
+            self, "Remove State", "States:", states.keys(), 0, False)
         if not ok:
             return
         del self.active_rig.groups[self.active_group]["states"][str(n)]
@@ -280,11 +280,10 @@ class Editor(QMainWindow):
         if not self.active_manipulator:
             return
         m = self.active_rig.get_manipulator(self.active_manipulator)
-        pick = si.PickObject()("PickedElement")
-        print pick
-        if pick:
-            m.add_space(name=pick.FullName, target=pick)
-            m.active_space = pick.FullName
+        picked = si.PickObject()("PickedElement")
+        if picked:
+            m.add_space(name=picked.FullName, target=picked)
+            m.active_space = picked.FullName
         self.reload_stack()
 
     def removespace_clicked(self):
