@@ -30,7 +30,7 @@ class IK(Base):
         anim_upv.icon.size = 0.25
         anim_upv.icon.connect = self.input.get("skeleton")[0]
         for i, ctrl in enumerate((anim_root, anim_upv, anim_eff)):
-            ctrl.rename(self.name, i)
+            ctrl.rename(self.name, i, side=self.side)
             self.helper.get("hidden").extend([ctrl.zero, ctrl.space])
         # align
         data = utils.curve_data(self.helper["curve"])

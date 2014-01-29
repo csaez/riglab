@@ -13,7 +13,7 @@ class SplineIK(Base):
         p0.owner = {"obj": self.obj, "class": self.classname}
         p1, p2, p3 = p0.duplicate(3)  # OPTIMIZATION
         for i, ctrl in enumerate((p0, p1, p2, p3)):
-            ctrl.rename(self.name, i)
+            ctrl.rename(self.name, i, side=self.side)
             if 0 < i < 3:
                 ctrl.icon.size = 0.25
                 continue
