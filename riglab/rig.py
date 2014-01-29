@@ -207,13 +207,17 @@ class Rig(SIWrapper):
             l = list()
             deps = dict([(s.id, [x.id for x in self.get_dependencies(s)])
                          for s in solvers])
-            for d in deps.values():
-                l.extend(d)
+            for k, d in deps.iteritems():
+                if len(d):
+                    l.append(k)
+                    l.extend(d)
                 for solver_id in d:
                     l.extend(deps.get(solver_id))
             c = collections.Counter(l)
             for solver_id in sorted(deps.keys(), key=lambda x: c[x], reverse=True):
-                self.get_solver(solver_id).snap()  # snap
+                solver = self.get_solver(solver_id)
+                if not solver.state:
+                    solver.snap()  # snap
         # apply new state
         for state_name, state_value in grp["states"][name].iteritems():
             solver = [x for x in solvers if x.id == state_name][0]
@@ -314,8 +318,15 @@ class Rig(SIWrapper):
     def apply_pose(self, mode=None):
         if mode is None:
             mode = self._mode
+        skeleton = self.skeleton
+        if mode == 1:
+            # dont change pose on disabled solvers
+            s1 = set([sk.FullName for g in self.groups
+                      for sk in self.get_skeleton(g)])
+            s2 = set([x.FullName for x in self.skeleton])
+            skeleton = [siget(x) for x in s2.difference(s1)]
         tm = simath.CreateTransform()
-        for x in self.skeleton:
+        for x in skeleton:
             m4 = self.poses[mode].get(x.Name)
             if not m4:
                 continue
