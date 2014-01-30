@@ -38,3 +38,8 @@
 2014-01-27 13:31:29     9220   +93    -7 7c51c04 cesarte@gmail.com 	Joint utils as commands
 2014-01-27 22:55:02     9220  +929  -929 9a0da42 cesarte@gmail.com 	manager -> editor
 2014-01-27 22:55:43     9243   +27    -4 67c1c4e cesarte@gmail.com 	orthogonalize utility
+2014-01-28 15:17:53     7983   +21 -1281 c125b3e cesarte@gmail.com 	naming module as dependency
+2014-01-29 01:15:45     8024   +82   -41 672279f cesarte@gmail.com 	BUGFIX: snap should be compatible with custom spaces
+2014-01-29 13:31:19     8035   +15    -4 277a7a2 cesarte@gmail.com 	BUGFIX: preserve skeleton's pose from disabled solvers
+2014-01-29 17:56:51     8035    +2    -2 9f5ed42 cesarte@gmail.com 	BUGFIX: side on manipulators name
+2014-01-29 23:11:21     8154  +142   -23 efcaae4 cesarte@gmail.com 	group_data (templates) and mapping gui
