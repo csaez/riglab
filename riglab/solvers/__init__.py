@@ -3,7 +3,7 @@
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License.
+# the Free Software Foundation version 3.
 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .fk import FK
-from .ik import IK
-from .splineik import SplineIK
+from .fk import *
+from .ik import *
+from .splineik import *
 
 
 def from_manipulator(manipulator):
