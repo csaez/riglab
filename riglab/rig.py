@@ -236,24 +236,50 @@ class Rig(SIWrapper):
                 si.SaveKey(param, current_frame)
                 si.SaveKey(param, current_frame - 1, old_state[i])
 
-    def export_data(self, group_name):
-        if not self.groups.get(group_name):
-            return
-        data = {"solvers": list(), "states": dict()}
-        # serialize solver stack
-        for i, s in enumerate(self.groups[group_name]["solvers"]):
-            data["solvers"].append(s.data)
-        # copy states
-        data["states"] = self.groups[group_name]["states"].copy()
-        return data
+    def group_data(self, group_id):
+        # MAPPING TABLE
+        mapping = {"group_id": group_id, "solvers": {}, "skeleton": {}}
+        # default names
+        for x in self.groups[group_id]["solvers"]:
+            mapping["solvers"][x] = self.get_solver(x).__class__.__name__
+        # init skeleton to None
+        for x in self.get_skeleton(group_id):
+            mapping["skeleton"][x.FullName] = None
+        # TEMPLATE
+        template = dict()  # init
+        solvers = [self.get_solver(x) for x in mapping["solvers"]]
+        for s in solvers:
+            d = dict()  # data per solver
+            d["skeleton"] = [x.FullName for x in s.input["skeleton"]]
+            # customized rigicons
+            d["icons"] = [x.ActivePrimitive.Geometry.Get2()
+                          for x in s.input["anim"]]
+            # dependencies
+            d["dependencies"] = [None for _ in range(len(s.input["anim"]))]
+            for i, a in enumerate(s.input["anim"]):
+                m = s.get_manipulator(a.FullName)  # manipulator
+                deps = {"internal": dict(), "external": list()}
+                for o in m.spaces:
+                    for x in solvers:
+                        # internal deps
+                        anims = [_.FullName for _ in x.input["anim"]]
+                        if o in anims:
+                            deps["internal"][x.id] = anims.index(o)
+                d["dependencies"][i] = deps.copy()
+            # TODO: solve external dependencies
+            template[s.id] = d
+        return collections.namedtuple("group_data", "mapping, template")._make((mapping, template))
 
-    def load_data(self, group_name, data):
+    def apply_template(self, group_id, mapping, template):
+        # validate
+        if not self.groups.get(group_id):
+            print "WARNING: invalid group_id."
+            return False
+        s = mapping.get("skeleton")
+        if not s or None in s.values():
+            print "WARNING: please fill the mapping dict."
+            return False
         pass
-        # self.add_group(group_name)
-        # for d in data["solvers"]:
-        #     self.groups[group_name]["solvers"].append(
-        #         solver.Solver.from_data(d))
-        # self.groups[group_name]["states"] = data["states"].copy()
 
     @property
     def mode(self):

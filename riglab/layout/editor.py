@@ -10,6 +10,7 @@ from rigicon.layout.library_gui import RigIconLibrary
 from .. import riglab
 from .rename import Rename
 from .shape_color import ShapeColor
+from .mapping import Mapping
 
 
 class MyDelegate(QtGui.QItemDelegate):
@@ -156,23 +157,23 @@ class Editor(QMainWindow):
         self.active_rig.meshes = sisel
 
     def copytemplate_clicked(self):
-        self._clipboard = self.active_rig.export_data(self.active_group)
+        self._clipboard = self.active_rig.group_data(self.active_group)
 
     def pastetemplate_clicked(self):
         if not self._clipboard:
             return
-        self.active_rig.load_data(self.active_group, self._clipboard.copy())
-        self.reload_stack()
+        m, t = self._clipboard
+        skeleton = Mapping.get(self, m["skeleton"])
+        if skeleton:
+            m["skeleton"] = skeleton
+            self.active_rig.apply_template(self.active_group, m, t)
+            self.reload_stack()
 
     def addgroup_clicked(self):
         data = self.get_name()
         if not data or not len(data.name):
             return
         name = data.name + "_" + data.side
-        # name, ok = QtGui.QInputDialog.getText(self, "Add Group", "Group name:")
-        # name = str(name)
-        # if not ok or not len(name):
-        #     return
         self.active_rig.add_group(name)
         self.reload_stack()
 
