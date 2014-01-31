@@ -6,18 +6,18 @@ TEMPLATE SPECS
     {
         "filetype": "riglab_template",
          "version": "1.0",
-         "mapping": {"solvers": {ref_solver_id: class_name, ...},
-                     "skeleton": {ref_joint: new_joint,
-                                  ...},
+         "mapping": {
+                        "solvers": {ref_solver_id: class_name, ...},
+                        "skeleton": {ref_joint: new_joint, ...},
                     },
-         "data": {ref_solver_id: {"skeleton": (ref_joint, ...),
-                                  "icons": (curve_data*, ...)
-                                  "dependencies": ({"internal": {ref_solver_id: index,
-                                                                 ...},
-                                                    "external": (obj_name**, ...),
-                                                    "active": ref***,
-                                                   }, ...),
-                  ...},
+         "data": {
+                    ref_solver_id: {"skeleton": (ref_joint, ...),
+                                    "icons": (curve_data*, ...)
+                                    "dependencies": ({"internal": {ref_solver_id: index, ...},
+                                                      "external": (obj_name**, ...),
+                                                      "active": ref***}, ...),
+                    ...,
+                },
     }
 
 (*)
@@ -29,4 +29,4 @@ geometry in a Softimage friendly format
 `obj_name` is the fullname of the object used as ref for the space switching.
 
 (***)
-`ref` is a reference to the active space.
+`ref` is the name of the active space.
