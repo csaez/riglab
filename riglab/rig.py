@@ -253,14 +253,18 @@ class Rig(SIWrapper):
     def get_template(self, group_id):
         # TODO: save states
         # mapping table
-        mapping = {"solvers": {}, "skeleton": {}}
+        mapping = {"solvers": {}, "skeleton":
+                  {}, "states": {}, "active_state": ""}
         # solvers
         for x in self.groups[group_id]["solvers"]:
             mapping["solvers"][x] = self.get_solver(x).classname
         # init skeleton to None
         for x in self.get_skeleton(group_id):
             mapping["skeleton"][x.FullName] = None
-        # template data
+        # states
+        mapping["states"] = self.groups[group_id]["states"].copy()
+        mapping["active_state"] = self.groups[group_id].get("active")
+        # solver data
         data = dict()  # init
         solvers = [self.get_solver(x) for x in mapping["solvers"]]
         for s in solvers:
@@ -326,6 +330,12 @@ class Rig(SIWrapper):
                 for ref, index in d["internal"].iteritems():
                     target = self.get_solver(table[ref]).input["anim"][index]
                     m.add_space(target.FullName, target)
+        # STATES
+        for name, data in template["mapping"]["states"].iteritems():
+            for solver_id, value in data.iteritems():
+                self.get_solver(table[solver_id]).state = value
+            self.save_state(group_id, name)
+        self.apply_state(group_id, template["mapping"]["active_state"])
 
     @property
     def mode(self):
