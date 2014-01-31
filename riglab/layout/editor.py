@@ -183,14 +183,13 @@ class Editor(QMainWindow):
     def pastetemplate_clicked(self):
         if not self._clipboard:
             return
+        if self._clipboard.get("filetype") != "riglab_template":
+            return
         t = self._clipboard
         skeleton = Mapping.get(self, t["mapping"]["skeleton"])
         if skeleton:
             t["mapping"]["skeleton"] = skeleton
             self.active_rig.apply_template(self.active_group, t)
-            for k, v in self._clipboard.iteritems():
-                print k
-                print v
             self.reload_stack()
 
     def savetemplate_clicked(self):

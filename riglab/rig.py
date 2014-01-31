@@ -119,11 +119,11 @@ class Rig(SIWrapper):
             data.extend(query_function(solver))
         return data
 
-    def add_solver(self, solver_type, group_name, name=None, side="C"):
+    def add_solver(self, solver_type, group_name, skeleton=None, name=None, side="C"):
         if self.groups.get(group_name) is None or not hasattr(solvers, solver_type) or not sisel.Count:
             return
         # save selection
-        skeleton = list(sisel)
+        skeleton = skeleton or list(sisel)
         # ensure rigging mode
         self.mode = 1
         # save stack state
@@ -251,15 +251,16 @@ class Rig(SIWrapper):
                 si.SaveKey(param, current_frame - 1, old_state[i])
 
     def get_template(self, group_id):
-        # MAPPING TABLE
-        mapping = {"group_id": group_id, "solvers": {}, "skeleton": {}}
-        # default names
+        # TODO: save states
+        # mapping table
+        mapping = {"solvers": {}, "skeleton": {}}
+        # solvers
         for x in self.groups[group_id]["solvers"]:
-            mapping["solvers"][x] = self.get_solver(x).__class__.__name__
+            mapping["solvers"][x] = self.get_solver(x).classname
         # init skeleton to None
         for x in self.get_skeleton(group_id):
             mapping["skeleton"][x.FullName] = None
-        # TEMPLATE DATA
+        # template data
         data = dict()  # init
         solvers = [self.get_solver(x) for x in mapping["solvers"]]
         for s in solvers:
@@ -269,10 +270,12 @@ class Rig(SIWrapper):
             d["icons"] = [x.ActivePrimitive.Geometry.Get2()
                           for x in s.input["anim"]]
             # dependencies
+            # TODO: solve active
+            # TODO: solve external dependencies
             d["dependencies"] = [None for _ in range(len(s.input["anim"]))]
             for i, a in enumerate(s.input["anim"]):
                 m = s.get_manipulator(a.FullName)  # manipulator
-                deps = {"internal": dict(), "external": list()}
+                deps = {"internal": dict(), "external": list(), "active": ""}
                 for o in m.spaces:
                     for x in solvers:
                         # internal deps
@@ -280,7 +283,6 @@ class Rig(SIWrapper):
                         if o in anims:
                             deps["internal"][x.id] = anims.index(o)
                 d["dependencies"][i] = deps.copy()
-            # TODO: solve external dependencies
             data[s.id] = d
         return {"mapping": mapping, "data": data,
                 "filetype": "riglab_template", "version": "1.0"}
@@ -290,11 +292,40 @@ class Rig(SIWrapper):
         if not self.groups.get(group_id):
             print "WARNING: invalid group_id."
             return False
-        s = template["mapping"]["skeleton"]
+        if template.get("filetype") != "riglab_template":
+            print "ERROR: template is invalid"
+            return
+        s = template["mapping"]["skeleton"] or None
         if not s or None in s.values():
             print "WARNING: please fill the mapping dict."
-            return False
-        pass
+            return
+        # BUILD FROM TEMPLATE
+        table = dict()
+        side = group_id[-1]
+        for solver_id, class_name in template["mapping"]["solvers"].iteritems():
+            # get skeleton
+            sk = [template["mapping"]["skeleton"].get(x)
+                  for x in template["data"][solver_id]["skeleton"]]
+            sk = [siget(x) for x in sk]
+            # add solver
+            s = self.add_solver(class_name, group_id, skeleton=sk, side=side)
+            # set icon data
+            curve_data = template["data"][solver_id]["icons"]
+            si.FreezeObj(s.input["anim"])
+            for i, a in enumerate(s.input["anim"]):
+                a.ActivePrimitive.Geometry.Set(*curve_data[i])
+            table[solver_id] = s.id  # save relationship
+        # DEPENDENCIES
+        for old_id, new_id in table.iteritems():
+            solver = self.get_solver(new_id)
+            deps = template["data"][old_id]["dependencies"]
+            for i, d in enumerate(deps):
+                a = solver.input["anim"][i]
+                m = solver.get_manipulator(a.FullName)
+                # internal
+                for ref, index in d["internal"].iteritems():
+                    target = self.get_solver(table[ref]).input["anim"][index]
+                    m.add_space(target.FullName, target)
 
     @property
     def mode(self):
