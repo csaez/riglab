@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import json
 import webbrowser
 
 import naming
@@ -80,6 +81,8 @@ class Editor(QMainWindow):
         # group signals
         self.ui.copyTemplate.triggered.connect(self.copytemplate_clicked)
         self.ui.pasteTemplate.triggered.connect(self.pastetemplate_clicked)
+        self.ui.loadTemplate.triggered.connect(self.loadtemplate_clicked)
+        self.ui.saveTemplate.triggered.connect(self.savetemplate_clicked)
         self.ui.addGroup.triggered.connect(self.addgroup_clicked)
         self.ui.removeGroup.triggered.connect(self.removegroup_clicked)
         self.ui.addState.triggered.connect(self.savestate_clicked)
@@ -172,17 +175,73 @@ class Editor(QMainWindow):
         self.active_rig.meshes = sisel
 
     def copytemplate_clicked(self):
-        self._clipboard = self.active_rig.group_data(self.active_group)
+        if not self.active_group:
+            print "ERROR: group not found!"
+            return
+        self._clipboard = self.active_rig.get_template(self.active_group)
 
     def pastetemplate_clicked(self):
         if not self._clipboard:
             return
-        m, t = self._clipboard
-        skeleton = Mapping.get(self, m["skeleton"])
+        t = self._clipboard
+        skeleton = Mapping.get(self, t["mapping"]["skeleton"])
         if skeleton:
-            m["skeleton"] = skeleton
-            self.active_rig.apply_template(self.active_group, m, t)
+            t["mapping"]["skeleton"] = skeleton
+            self.active_rig.apply_template(self.active_group, t)
+            for k, v in self._clipboard.iteritems():
+                print k
+                print v
             self.reload_stack()
+
+    def savetemplate_clicked(self):
+        if not self.active_group:
+            print "ERROR: group not found!"
+            return
+        # http://qt-project.org/doc/qt-4.8/qfiledialog.html#getSaveFileName
+        # QString QFileDialog::getSaveFileName (
+        #     QWidget * parent = 0,
+        #     const QString & caption = QString(),
+        #     const QString & dir = QString(),
+        #     const QString & filter = QString(),
+        #     QString * selectedFilter = 0,
+        #     Options options = 0 )
+        si.Desktop.SuspendWin32ControlsHook()  # fix softimage glitches
+        options = {"parent": self, "caption": "Template File",
+                   "filter": "RIGLAB TEMPLATE (*.json)"}
+        fn = QtGui.QFileDialog.getSaveFileName(**options)
+        si.Desktop.RestoreWin32ControlsHook()
+        if fn:
+            template = self.active_rig.get_template(self.active_group)
+            with open(str(fn), "w") as f:
+                json.dump(template, f, sort_keys=True,
+                          indent=2, separators=(',', ': '))
+
+    def loadtemplate_clicked(self):
+        if not self.active_group:
+            print "ERROR: group not found!"
+            return
+        # http://qt-project.org/doc/qt-4.8/qfiledialog.html#getOpenFileName
+        # QString QFileDialog::getOpenFileName(
+        #     QWidget * parent=0,
+        #     const QString & caption=QString(),
+        #     const QString & dir=QString(),
+        #     const QString & filter=QString(),
+        #     QString * selectedFilter=0,
+        #     Options options=0)
+        si.Desktop.SuspendWin32ControlsHook()  # fix softimage glitches
+        options = {"parent": self, "caption": "Template File",
+                   "filter": "RIGLAB TEMPLATE (*.json)"}
+        fn = QtGui.QFileDialog.getOpenFileName(**options)
+        si.Desktop.RestoreWin32ControlsHook()
+        if fn:
+            # load from json
+            with open(str(fn)) as f:
+                template = json.load(f)
+            # check file type
+            if template.get("filetype") == "riglab_template":
+                # set to clipboard and load
+                self._clipboard = template
+                self.pastetemplate_clicked()
 
     def addgroup_clicked(self):
         data = self.get_name()

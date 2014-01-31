@@ -250,7 +250,7 @@ class Rig(SIWrapper):
                 si.SaveKey(param, current_frame)
                 si.SaveKey(param, current_frame - 1, old_state[i])
 
-    def group_data(self, group_id):
+    def get_template(self, group_id):
         # MAPPING TABLE
         mapping = {"group_id": group_id, "solvers": {}, "skeleton": {}}
         # default names
@@ -259,8 +259,8 @@ class Rig(SIWrapper):
         # init skeleton to None
         for x in self.get_skeleton(group_id):
             mapping["skeleton"][x.FullName] = None
-        # TEMPLATE
-        template = dict()  # init
+        # TEMPLATE DATA
+        data = dict()  # init
         solvers = [self.get_solver(x) for x in mapping["solvers"]]
         for s in solvers:
             d = dict()  # data per solver
@@ -281,15 +281,16 @@ class Rig(SIWrapper):
                             deps["internal"][x.id] = anims.index(o)
                 d["dependencies"][i] = deps.copy()
             # TODO: solve external dependencies
-            template[s.id] = d
-        return collections.namedtuple("group_data", "mapping, template")._make((mapping, template))
+            data[s.id] = d
+        return {"mapping": mapping, "data": data,
+                "filetype": "riglab_template", "version": "1.0"}
 
-    def apply_template(self, group_id, mapping, template):
+    def apply_template(self, group_id, template):
         # validate
         if not self.groups.get(group_id):
             print "WARNING: invalid group_id."
             return False
-        s = mapping.get("skeleton")
+        s = template["mapping"]["skeleton"]
         if not s or None in s.values():
             print "WARNING: please fill the mapping dict."
             return False
