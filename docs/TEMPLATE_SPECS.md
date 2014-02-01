@@ -9,6 +9,9 @@ TEMPLATE SPECS
          "mapping": {
                         "solvers": {ref_solver_id: class_name, ...},
                         "skeleton": {ref_joint: new_joint, ...},
+                        "states": {state_name: {ref_solver_id: state_value, ...},
+                                   ...},
+                        "active_state": state_name,
                     },
          "data": {
                     ref_solver_id: {"skeleton": (ref_joint, ...),
