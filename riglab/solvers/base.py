@@ -61,7 +61,7 @@ class Base(SIWrapper):
                 bone.Kinematics.Local.Parameters(param).Value = False
             if i < limit:
                 # set outputs
-                name = self.nm.qn(self.name, i, "rig")
+                name = self.nm.qn(self.name, i, "rig", side=self.side)
                 self.output["tm"].append(self.output.get("root").AddNull(name))
         self.helper.get("hidden").extend(self.output.get("tm"))
         # custom parameters
@@ -86,7 +86,8 @@ class Base(SIWrapper):
             # create a curve from skeleton
             self.helper["curve"] = utils.sel2curve(
                 self.input.get("skeleton"), parent=self.helper["root"])
-            self.helper["curve"].Name = self.nm.qn(self.name, "curve")
+            self.helper["curve"].Name = self.nm.qn(
+                self.name, "curve", side=self.side)
             self.helper["hidden"].append(self.helper.get("curve"))
         self.custom_anim()
 

@@ -44,7 +44,8 @@ class SplineIK(Base):
         op = si.ApplyGenOp("CrvFit", "", self.helper["curve"])(0)
         op.Parameters("points").Value = 1
         self.helper["bezier"] = op.Parent3DObject
-        self.helper["bezier"].Name = self.nm.qn(self.name, "bezierCurve")
+        self.helper["bezier"].Name = self.nm.qn(
+            self.name, "bezierCurve", side=self.side)
         self.helper["root"].AddChild(self.helper["bezier"])
         self.helper["hidden"].append(self.helper.get("bezier"))
         pts = self.helper["bezier"].ActivePrimitive.Geometry.Points

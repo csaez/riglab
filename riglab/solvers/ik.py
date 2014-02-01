@@ -107,10 +107,10 @@ class IK(Base):
         root = utils.curve2chain(self.helper.get("curve"),
                                  parent=self.helper["root"])
         # rename
-        root.Name = self.nm.qn(self.name + "Root", "jnt")
-        root.Effector.Name = self.nm.qn(self.name + "Eff", "jnt")
+        root.Name = self.nm.qn(self.name + "Root", "jnt", side=self.side)
+        root.Effector.Name = self.nm.qn(self.name + "Eff", "jnt", side=self.side)
         for i in range(root.Bones.Count):
-            root.Bones(i).Name = self.nm.qn(self.name, "jnt", i)
+            root.Bones(i).Name = self.nm.qn(self.name, "jnt", i, side=self.side)
         # cleanup
         self.helper.get("hidden").extend(list(root.Bones))
         self.helper.get("hidden").extend([root, root.Effector])
