@@ -14,8 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import naming
-from wishlib.si import si
-from . import rig
+from wishlib.si import si, siget
+from .rig import Rig
 
 
 class RigLab(object):
@@ -23,13 +23,29 @@ class RigLab(object):
 
     def __init__(self):
         super(RigLab, self).__init__()
-        # get rigs on scene
-        self.scene_rigs = list()
+        self.pool = dict()  # cache
+
+    def add_rig(self, name):
+        return Rig.new(name)
+
+    def list_rigs(self):
+        result = list()
         for x in si.ActiveSceneRoot.FindChildren2("*", "#model"):
             data = self.nm.decompose(x.Name, "model")
             if data and data.get("category") == "character":
-                self.scene_rigs.append(rig.Rig(x))
+                result.append(x.Name)
+        return result
 
-    def add_rig(self, name):
-        self.scene_rigs.append(rig.Rig.new(name))
-        return self.scene_rigs[-1]
+    def get_rig(self, name):
+        o = siget(name)
+        if not o:
+            return None
+        r = self.pool.get(name)  # cache
+        if not r:
+            r = Rig(o)
+            self.pool[name] = r
+        return r
+
+    @property
+    def scene_rigs(self):
+        return (self.get_rig(x) for x in self.list_rigs())

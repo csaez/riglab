@@ -117,8 +117,7 @@ class Editor(QMainWindow):
         self.ui.docs.triggered.connect(
             lambda: webbrowser.open("https://github.com/csaez/riglab", new=2))
         # set active rig
-        self.active_rig = self.riglab.scene_rigs[
-            0] if len(self.riglab.scene_rigs) else None
+        self.active_rig = None  # disable gui
         # set autosnap's default to True
         self.autosnap = False
         self.autosnap_clicked()  # update icon
@@ -196,14 +195,8 @@ class Editor(QMainWindow):
         if not self.active_group:
             print "ERROR: group not found!"
             return
+        # QT DOCS:
         # http://qt-project.org/doc/qt-4.8/qfiledialog.html#getSaveFileName
-        # QString QFileDialog::getSaveFileName (
-        #     QWidget * parent = 0,
-        #     const QString & caption = QString(),
-        #     const QString & dir = QString(),
-        #     const QString & filter = QString(),
-        #     QString * selectedFilter = 0,
-        #     Options options = 0 )
         si.Desktop.SuspendWin32ControlsHook()  # fix softimage glitches
         options = {"parent": self, "caption": "Template File",
                    "filter": "RIGLAB TEMPLATE (*.json)"}
@@ -219,14 +212,8 @@ class Editor(QMainWindow):
         if not self.active_group:
             print "ERROR: group not found!"
             return
+        # QT DOCS:
         # http://qt-project.org/doc/qt-4.8/qfiledialog.html#getOpenFileName
-        # QString QFileDialog::getOpenFileName(
-        #     QWidget * parent=0,
-        #     const QString & caption=QString(),
-        #     const QString & dir=QString(),
-        #     const QString & filter=QString(),
-        #     QString * selectedFilter=0,
-        #     Options options=0)
         si.Desktop.SuspendWin32ControlsHook()  # fix softimage glitches
         options = {"parent": self, "caption": "Template File",
                    "filter": "RIGLAB TEMPLATE (*.json)"}
@@ -316,6 +303,7 @@ class Editor(QMainWindow):
             self.active_rig.add_solver(
                 solver_type, self.active_group, name=data.name, side=data.side)
             self.reload_stack()
+            self.raise_()
 
     def removesolver_clicked(self, solver=None):
         if not self.active_solver:
@@ -430,17 +418,17 @@ class Editor(QMainWindow):
     # UTILITY
     def reload_rigmenu(self):
         self._mute = True
+        # add scene rigs
+        action_names = [str(a.text()) for a in self.ui.activeRig.actions()]
+        for i, rig_name in enumerate(self.riglab.list_rigs()):
+            if rig_name not in action_names:
+                action = self.ui.activeRig.addAction(rig_name)
+                QtCore.QObject.connect(
+                    action, QtCore.SIGNAL("triggered()"),
+                    lambda v=rig_name: setattr(self, "active_rig", self.riglab.get_rig(v)))
         if not self.active_rig:
             self._mute = False
             return
-        # add scene rigs
-        action_names = [str(a.text()) for a in self.ui.activeRig.actions()]
-        for i, rig in enumerate(self.riglab.scene_rigs):
-            if rig.name not in action_names:
-                action = self.ui.activeRig.addAction(rig.name)
-                QtCore.QObject.connect(
-                    action, QtCore.SIGNAL("triggered()"),
-                    lambda v=rig: setattr(self, "active_rig", v))
         # set icons
         ICONS = (QtGui.QIcon(self.IMAGES.get("check")), QtGui.QIcon())
         for action in self.ui.activeRig.actions():
@@ -455,10 +443,16 @@ class Editor(QMainWindow):
         self._mute = True
         ICON = lambda x: QtGui.QIcon(self.IMAGES.get(x))
         # store view config
-        config = [(self.ui.stack.topLevelItem(i).text(0),
-                   self.ui.stack.topLevelItem(i).isExpanded(),
-                   self.ui.stack.itemWidget(self.ui.stack.topLevelItem(i), 1).currentIndex())
-                  for i in range(self.ui.stack.topLevelItemCount())]
+        view_state = {"group": {}, "solver": {}, "current_item": None}
+        for i in range(self.ui.stack.topLevelItemCount()):
+            g = self.ui.stack.topLevelItem(i)
+            view_state["group"][str(g.text(0))] = g.isExpanded()
+            for j in range(g.childCount()):
+                s = g.child(j)
+                view_state["solver"][str(s.text(0))] = s.isExpanded()
+        curr_item = self.ui.stack.currentItem()
+        if curr_item:
+            view_state["current_item"] = str(curr_item.text(0))
         # redraw everything
         self.ui.stack.clear()
         for group_name, v in self.active_rig.groups.iteritems():
@@ -502,13 +496,27 @@ class Editor(QMainWindow):
                         pass
                     self.ui.stack.setItemWidget(anim, 1, spaces)
         # restore view config (by name)
+        curr_item = None
         for i in range(self.ui.stack.topLevelItemCount()):
-            item = self.ui.stack.topLevelItem(i)
-            for value in config:
-                if str(item.text(0)) != str(value[0]):
-                    continue
-                item.setExpanded(value[1])
-                self.ui.stack.itemWidget(item, 1).setCurrentIndex(value[2])
+            g = self.ui.stack.topLevelItem(i)
+            if str(g.text(0)) == view_state["current_item"]:
+                curr_item = g
+            v = view_state["group"].get(str(g.text(0)))
+            if v:
+                g.setExpanded(v)
+            for j in range(g.childCount()):
+                s = g.child(j)
+                if str(s.text(0)) == view_state["current_item"]:
+                    curr_item = s
+                v = view_state["solver"].get(str(s.text(0)))
+                if v:
+                    g.child(j).setExpanded(v)
+                for k in range(s.childCount()):
+                    a = s.child(k)
+                    if str(a.text(0)) == view_state["current_item"]:
+                        curr_item = a
+        if curr_item:
+            self.ui.stack.setCurrentItem(curr_item)
         self._mute = False
 
     def disable_gui(self, value):
@@ -521,14 +529,15 @@ class Editor(QMainWindow):
 
     @property
     def active_rig(self):
-        return self.riglab.scene_rigs[self._index] if self._index >= 0 else None
+        r = self.riglab.list_rigs()[self._index] if self._index >= 0 else None
+        return self.riglab.get_rig(r) or None
 
     @active_rig.setter
     def active_rig(self, rig):
         self.disable_gui(rig is not None)
         if rig is None:
             return
-        self._index = self.riglab.scene_rigs.index(rig)
+        self._index = self.riglab.list_rigs().index(rig.name)
         self.reload_stack()
 
     @property

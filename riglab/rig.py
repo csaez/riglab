@@ -125,7 +125,8 @@ class Rig(SIWrapper):
         # save selection
         skeleton = skeleton or list(sisel)
         # ensure rigging mode
-        self.mode = 1
+        if not self.mode:
+            self.mode = 1
         # save stack state
         solver_stack = [self.get_solver(x) for x in self.solvers]
         old_state = list()
@@ -148,7 +149,7 @@ class Rig(SIWrapper):
         # restore stack states
         for i, x in enumerate(solver_stack):
             x.state = old_state[i]
-        si.SelectObj(skeleton)  # restore selection
+        # si.SelectObj(skeleton)  # restore selection
         return solver
 
     def remove_solver(self, solver_id):
@@ -226,7 +227,8 @@ class Rig(SIWrapper):
                     l.append(k)
                     l.extend(d)
                 for solver_id in d:
-                    l.extend(deps.get(solver_id))
+                    if deps.get(solver_id):
+                        l.extend(deps.get(solver_id))
             c = collections.Counter(l)
             for solver_id in sorted(deps.keys(), key=lambda x: c[x], reverse=True):
                 solver = self.get_solver(solver_id)
@@ -291,7 +293,7 @@ class Rig(SIWrapper):
         return {"mapping": mapping, "data": data,
                 "filetype": "riglab_template", "version": "1.0"}
 
-    def apply_template(self, group_id, template):
+    def apply_template(self, group_id, template, invert=False):
         # validate
         if not self.groups.get(group_id):
             print "WARNING: invalid group_id."
