@@ -32,7 +32,3 @@ TEMPLATE SPECS
 (*) `curve_data` is a 1-dimensional array (per manipulator) containing the curve
 geometry in a Softimage friendly format
 ([docs](http://download.autodesk.com/global/docs/softimage2012/en_us/sdkguide/si_om/NurbsCurveList.Get2.html)).
-
-(**) `obj_name` is the fullname of the object used as ref for the space switching.
-
-(***) `ref` is the name of the active space.
