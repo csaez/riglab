@@ -25,6 +25,7 @@ from rigicon.layout.library_gui import RigIconLibrary
 
 from .. import riglab
 from .rename import Rename
+from .space_name import SpaceName
 from .shape_color import ShapeColor
 from .mapping import Mapping
 
@@ -115,9 +116,12 @@ class Editor(QMainWindow):
         self.ui.rigiconLibrary.triggered.connect(
             lambda: show_qt(RigIconLibrary))
         self.ui.docs.triggered.connect(
-            lambda: webbrowser.open("https://github.com/csaez/riglab", new=2))
+            lambda: webbrowser.open("http://github.com/csaez/riglab", new=2))
         # set active rig
         self.active_rig = None  # disable gui
+        rigs = self.riglab.list_rigs()
+        if len(rigs):
+            self.active_rig = self.riglab.get_rig(rigs[0])
         # set autosnap's default to True
         self.autosnap = False
         self.autosnap_clicked()  # update icon
@@ -179,16 +183,18 @@ class Editor(QMainWindow):
             return
         self._clipboard = self.active_rig.get_template(self.active_group)
 
-    def pastetemplate_clicked(self):
+    def pastetemplate_clicked(self, icon=None):
+        if icon is None:
+            icon = True
         if not self._clipboard:
             return
-        if self._clipboard.get("filetype") != "riglab_template":
+        if self._clipboard.get("filetype") != "riglab:group_template":
             return
         t = self._clipboard
         skeleton = Mapping.get(self, t["mapping"]["skeleton"])
         if skeleton:
             t["mapping"]["skeleton"] = skeleton
-            self.active_rig.apply_template(self.active_group, t)
+            self.active_rig.apply_template(self.active_group, t, icon=icon)
             self.reload_stack()
 
     def savetemplate_clicked(self):
@@ -227,7 +233,7 @@ class Editor(QMainWindow):
             if template.get("filetype") == "riglab_template":
                 # set to clipboard and load
                 self._clipboard = template
-                self.pastetemplate_clicked()
+                self.pastetemplate_clicked(icon=False)
 
     def addgroup_clicked(self):
         data = self.get_name()
@@ -344,19 +350,24 @@ class Editor(QMainWindow):
         m = self.active_rig.get_manipulator(self.active_manipulator)
         picked = si.PickObject()("PickedElement")
         if picked:
-            m.add_space(name=picked.FullName, target=picked)
-            m.active_space = picked.FullName
-        self.reload_stack()
+            ok, data = SpaceName.get_data(
+                parent=self, space_name=picked.FullName)
+            if ok:
+                m.add_space(
+                    name=data.name, target=picked, space_type=data.type)
+                m.active_space = data.name
+                self.reload_stack()
 
     def removespace_clicked(self):
         if not self.active_manipulator:
             return
         m = self.active_rig.get_manipulator(self.active_manipulator)
         # check for spaces
-        if not any(m.spaces.values()):
+        items = m.list_spaces()
+        if not len(items):
             return
         n, ok = QtGui.QInputDialog.getItem(
-            self, "Remove Space", "Spaces:", m.spaces.keys(), 0, False)
+            self, "Remove Space", "Spaces:", items, 0, False)
         if ok:
             m.remove_space(str(n))
             self.reload_stack()
@@ -440,6 +451,8 @@ class Editor(QMainWindow):
         self._mute = False
 
     def reload_stack(self):
+        if not self.active_rig:
+            return
         self._mute = True
         ICON = lambda x: QtGui.QIcon(self.IMAGES.get(x))
         # store view config
@@ -484,14 +497,18 @@ class Editor(QMainWindow):
                 s.setCheckState(1, 2 if solver.state else 0)
                 # add manipulators
                 for a in solver.input.get("anim"):
+                    m = solver.get_manipulator(a.FullName)
+                    items = m.list_spaces()
                     anim = QtGui.QTreeWidgetItem((a.Name, ""))
                     s.addChild(anim)
                     spaces = QtGui.QComboBox()
-                    m = solver.get_manipulator(a.FullName)
-                    spaces.addItems(m.spaces.keys())
+                    spaces.addItems(items)
+                    QtCore.QObject.connect(
+                        spaces, QtCore.SIGNAL("currentIndexChanged(QString)"),
+                        lambda space_name, manip=m: setattr(manip, "active_space", str(space_name)))
                     try:
                         spaces.setCurrentIndex(
-                            m.spaces.keys().index(m.active_space))
+                            items.index(m.active_space))
                     except:
                         pass
                     self.ui.stack.setItemWidget(anim, 1, spaces)
@@ -518,6 +535,7 @@ class Editor(QMainWindow):
         if curr_item:
             self.ui.stack.setCurrentItem(curr_item)
         self._mute = False
+        self.show()
 
     def disable_gui(self, value):
         widgets = (self.ui.stack, self.ui.groupMenu,

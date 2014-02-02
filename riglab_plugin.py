@@ -46,7 +46,7 @@ def RigLabEditor_Execute():
 def CurveToNulls_Execute():
     log("CurvetoNulls_Execute called", C.siVerbose)
     from riglab.utils import curve2null
-    si.SelectObj(curve2null(sisel(0)))
+    si.SelectObj([n for c in list(sisel) for n in curve2null(c)])
     return True
 
 

@@ -46,12 +46,13 @@ class IK(Base):
         anim_upv.icon.connect = self.input.get("skeleton")[0]
         for i, ctrl in enumerate((anim_root, anim_upv, anim_eff)):
             ctrl.rename(self.name, i, side=self.side)
-            self.helper.get("hidden").extend([ctrl.zero, ctrl.space])
+            self.helper.get("hidden").extend(
+                [ctrl.orient, ctrl.zero, ctrl.space])
         # align
         data = utils.curve_data(self.helper["curve"])
-        utils.align_matrix4(anim_root.zero, data[0][0])
-        utils.align_matrix4(anim_eff.zero, data[0][-1])
-        utils.align_matrix4(anim_upv.zero, data[0][0])
+        utils.align_matrix4(anim_root.orient, data[0][0])
+        utils.align_matrix4(anim_eff.orient, data[0][-1])
+        utils.align_matrix4(anim_upv.orient, data[0][0])
         si.Translate(anim_upv.zero, 0, -data[1][0], 0, "siRelative", "siLocal")
         # save attributes
         self.input["anim"] = (anim_root.anim, anim_upv.anim, anim_eff.anim)
@@ -108,9 +109,11 @@ class IK(Base):
                                  parent=self.helper["root"])
         # rename
         root.Name = self.nm.qn(self.name + "Root", "jnt", side=self.side)
-        root.Effector.Name = self.nm.qn(self.name + "Eff", "jnt", side=self.side)
+        root.Effector.Name = self.nm.qn(
+            self.name + "Eff", "jnt", side=self.side)
         for i in range(root.Bones.Count):
-            root.Bones(i).Name = self.nm.qn(self.name, "jnt", i, side=self.side)
+            root.Bones(i).Name = self.nm.qn(
+                self.name, "jnt", i, side=self.side)
         # cleanup
         self.helper.get("hidden").extend(list(root.Bones))
         self.helper.get("hidden").extend([root, root.Effector])

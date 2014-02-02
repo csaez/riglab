@@ -253,13 +253,14 @@ class Rig(SIWrapper):
                 si.SaveKey(param, current_frame - 1, old_state[i])
 
     def get_template(self, group_id):
-        # TODO: save states
         # mapping table
         mapping = {"solvers": {}, "skeleton":
                   {}, "states": {}, "active_state": ""}
         # solvers
         for x in self.groups[group_id]["solvers"]:
-            mapping["solvers"][x] = self.get_solver(x).classname
+            x = self.get_solver(x)
+            mapping["solvers"][x.id] = {"name": x.name,
+                                        "class": x.classname}
         # init skeleton to None
         for x in self.get_skeleton(group_id):
             mapping["skeleton"][x.FullName] = None
@@ -268,7 +269,7 @@ class Rig(SIWrapper):
         mapping["active_state"] = self.groups[group_id].get("active")
         # solver data
         data = dict()  # init
-        solvers = [self.get_solver(x) for x in mapping["solvers"]]
+        solvers = [self.get_solver(x) for x in mapping["solvers"].keys()]
         for s in solvers:
             d = dict()  # data per solver
             d["skeleton"] = [x.FullName for x in s.input["skeleton"]]
@@ -282,23 +283,35 @@ class Rig(SIWrapper):
             for i, a in enumerate(s.input["anim"]):
                 m = s.get_manipulator(a.FullName)  # manipulator
                 deps = {"internal": dict(), "external": list(), "active": ""}
-                for o in m.spaces:
-                    for x in solvers:
-                        # internal deps
-                        anims = [_.FullName for _ in x.input["anim"]]
-                        if o in anims:
-                            deps["internal"][x.id] = anims.index(o)
+                for space_type in ("parent", "orient"):
+                    for name, cns in m.spaces[space_type].iteritems():
+                        o = cns.Parent3DObject.FullName
+                        internal = False
+                        for x in solvers:
+                            # internal deps
+                            anims = [_.FullName for _ in x.input["anim"]]
+                            if o in anims:
+                                internal = True
+                                deps[
+                                    "internal"][x.id] = {"index": anims.index(o),
+                                                         "name": name,
+                                                         "type": space_type}
+                        # external deps
+                        if not internal:
+                            deps["external"].append({"obj": o, "name": name,
+                                                     "type": space_type})
+                deps["active"] = m.active_space
                 d["dependencies"][i] = deps.copy()
             data[s.id] = d
         return {"mapping": mapping, "data": data,
-                "filetype": "riglab_template", "version": "1.0"}
+                "filetype": "riglab:group_template", "version": "1.0"}
 
-    def apply_template(self, group_id, template, invert=False):
+    def apply_template(self, group_id, template, invert=False, icon=True):
         # validate
         if not self.groups.get(group_id):
             print "WARNING: invalid group_id."
             return False
-        if template.get("filetype") != "riglab_template":
+        if template.get("filetype") != "riglab:group_template":
             print "ERROR: template is invalid"
             return
         s = template["mapping"]["skeleton"] or None
@@ -308,18 +321,20 @@ class Rig(SIWrapper):
         # BUILD FROM TEMPLATE
         table = dict()
         side = group_id[-1]
-        for solver_id, class_name in template["mapping"]["solvers"].iteritems():
+        for solver_id, solver_data in template["mapping"]["solvers"].iteritems():
             # get skeleton
             sk = [template["mapping"]["skeleton"].get(x)
                   for x in template["data"][solver_id]["skeleton"]]
             sk = [siget(x) for x in sk]
             # add solver
-            s = self.add_solver(class_name, group_id, skeleton=sk, side=side)
+            s = self.add_solver(solver_data["class"], group_id, skeleton=sk,
+                                name=solver_data["name"], side=side)
             # set icon data
-            curve_data = template["data"][solver_id]["icons"]
-            si.FreezeObj(s.input["anim"])
-            for i, a in enumerate(s.input["anim"]):
-                a.ActivePrimitive.Geometry.Set(*curve_data[i])
+            if icon:
+                curve_data = template["data"][solver_id]["icons"]
+                si.FreezeObj(s.input["anim"])
+                for i, a in enumerate(s.input["anim"]):
+                    a.ActivePrimitive.Geometry.Set(*curve_data[i])
             table[solver_id] = s.id  # save relationship
         # DEPENDENCIES
         for old_id, new_id in table.iteritems():
@@ -329,9 +344,19 @@ class Rig(SIWrapper):
                 a = solver.input["anim"][i]
                 m = solver.get_manipulator(a.FullName)
                 # internal
-                for ref, index in d["internal"].iteritems():
-                    target = self.get_solver(table[ref]).input["anim"][index]
-                    m.add_space(target.FullName, target)
+                for ref, data in d["internal"].iteritems():
+                    s = self.get_solver(table[ref])
+                    target = s.input["anim"][data["index"]]
+                    m.add_space(name=data["name"], target=target,
+                                space_type=data["type"])
+                # external
+                for data in d["external"]:
+                    t = siget(data["obj"])
+                    if not t:
+                        continue
+                    m.add_space(name=data["name"], target=t,
+                                space_type=data["type"])
+                m.active_space = d["active"]
         # STATES
         for name, data in template["mapping"]["states"].iteritems():
             for solver_id, value in data.iteritems():

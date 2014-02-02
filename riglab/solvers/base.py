@@ -79,7 +79,7 @@ class Base(SIWrapper):
         self.style()
         # refresh softimage ui
         self.update()
-        si.Refresh()
+        # si.Refresh()
 
     def create_anim(self):
         if len(self.input.get("skeleton")) > 1:

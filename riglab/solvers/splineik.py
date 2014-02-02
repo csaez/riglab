@@ -39,6 +39,7 @@ class SplineIK(Base):
         for x in (p0, p1, p2, p3):
             self.input["anim"].append(x.anim)
             self.helper["hidden"].append(x.zero)
+            self.helper["hidden"].append(x.orient)
             self.helper["hidden"].append(x.space)
         # create a live bezier curve
         op = si.ApplyGenOp("CrvFit", "", self.helper["curve"])(0)
@@ -51,10 +52,10 @@ class SplineIK(Base):
         pts = self.helper["bezier"].ActivePrimitive.Geometry.Points
         # align anim controls
         for i, pnt in enumerate(pts):
-            zero = self.input["anim"][i].Parent
-            tm = zero.Kinematics.Global.Transform
+            orient = self.input["anim"][i].Parent.Parent
+            tm = orient.Kinematics.Global.Transform
             tm.SetTranslation(pnt.Position)
-            zero.Kinematics.Global.Transform = tm
+            orient.Kinematics.Global.Transform = tm
 
     def custom_build(self):
         super(SplineIK, self).custom_build()

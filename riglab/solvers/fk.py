@@ -37,12 +37,12 @@ class FK(Base):
         # align
         if self.helper.get("curve"):
             data = zip(*utils.curve_data(self.helper.get("curve")))
-            utils.align_matrix4(anim[0].zero, data[0][0])
+            utils.align_matrix4(anim[0].orient, data[0][0])
             for i, (matrix, length) in enumerate(data[:-1]):
                 m = anim[i]
                 if i > 0:
                     m.parent = anim[i - 1].anim
-                utils.align_matrix4(m.zero, matrix)
+                utils.align_matrix4(m.orient, matrix)
                 m.icon.sclx = length
         else:  # align with the first bone
             anim[0].align(self.input["skeleton"][0])
@@ -50,7 +50,8 @@ class FK(Base):
         for i, each in enumerate(anim):
             each.rename(self.name, i, side=self.side)
             self.input.get("anim").append(each.anim)
-            self.helper.get("hidden").extend([each.zero, each.space])
+            self.helper.get("hidden").extend(
+                [each.orient, each.zero, each.space])
         self.input["anim"] = [x.anim for x in anim]
 
     def custom_build(self):
