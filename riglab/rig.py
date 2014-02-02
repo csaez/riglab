@@ -184,10 +184,14 @@ class Rig(SIWrapper):
     def get_dependencies(self, solver):
         result = list()
         for a in solver.input.get("anim"):
-            n = solver.get_manipulator(a.FullName).active_space
-            if n == "default":
+            manip = solver.get_manipulator(a.FullName)
+            if manip.active_space == "default":
                 continue
-            m = solver.get_manipulator(n)
+            cns = manip.spaces["parent"].get(
+                manip.active_space) or manip.spaces["orient"].get(manip.active_space)
+            if not cns:
+                continue
+            m = solver.get_manipulator(cns.Constraining(0).FullName)
             if not m or not m.owner.get("obj"):
                 continue
             n = m.owner.get("obj").Name.split("_")
@@ -277,28 +281,25 @@ class Rig(SIWrapper):
             d["icons"] = [x.ActivePrimitive.Geometry.Get2()
                           for x in s.input["anim"]]
             # dependencies
-            # TODO: solve active
-            # TODO: solve external dependencies
             d["dependencies"] = [None for _ in range(len(s.input["anim"]))]
             for i, a in enumerate(s.input["anim"]):
                 m = s.get_manipulator(a.FullName)  # manipulator
                 deps = {"internal": dict(), "external": list(), "active": ""}
                 for space_type in ("parent", "orient"):
                     for name, cns in m.spaces[space_type].iteritems():
-                        o = cns.Parent3DObject.FullName
+                        t = cns.Constraining(0).FullName  # cns target
                         internal = False
                         for x in solvers:
                             # internal deps
-                            anims = [_.FullName for _ in x.input["anim"]]
-                            if o in anims:
+                            a = [a.FullName for a in x.input["anim"]]
+                            if t in a:
+                                deps["internal"][x.id] = {"index": a.index(t),
+                                                          "name": name,
+                                                          "type": space_type}
                                 internal = True
-                                deps[
-                                    "internal"][x.id] = {"index": anims.index(o),
-                                                         "name": name,
-                                                         "type": space_type}
                         # external deps
                         if not internal:
-                            deps["external"].append({"obj": o, "name": name,
+                            deps["external"].append({"obj": t, "name": name,
                                                      "type": space_type})
                 deps["active"] = m.active_space
                 d["dependencies"][i] = deps.copy()
@@ -328,7 +329,7 @@ class Rig(SIWrapper):
             sk = [siget(x) for x in sk]
             # add solver
             s = self.add_solver(solver_data["class"], group_id, skeleton=sk,
-                                name=solver_data["name"], side=side)
+                                name=solver_data["name"][:-2], side=side)
             # set icon data
             if icon:
                 curve_data = template["data"][solver_id]["icons"]
@@ -435,7 +436,7 @@ class Rig(SIWrapper):
             s2 = set([x.FullName for x in self.skeleton])
             skeleton = [siget(x) for x in s2.difference(s1)]
         tm = simath.CreateTransform()
-        for x in skeleton:
+        for x in sorted(skeleton, key=utils.deep):
             m4 = self.poses[mode].get(x.Name)
             if not m4:
                 continue

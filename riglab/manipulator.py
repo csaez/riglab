@@ -132,9 +132,10 @@ class Manipulator(SIWrapper):
     def rename(self, *args, **kwds):
         with self.nm.override(rule="3dobject"):
             self.space.Name = self.nm.qn("group", *args, **kwds)
-            self.orient.Name = self.nm.qn("rig", *args, **kwds)
             self.zero.Name = self.nm.qn("zero", *args, **kwds)
             self.anim.Name = self.nm.qn("anim", *args, **kwds)
+            args = [x + "-orient" if type(x) == str else x for x in args]
+            self.orient.Name = self.nm.qn("rig", *args, **kwds)
         self.update()
 
     def destroy(self):
