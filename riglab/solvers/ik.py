@@ -39,7 +39,7 @@ class IK(Base):
         anim_root.icon.shape = self.shape_color.get("ikIcon")
         anim_root.icon.color = self.shape_color.get(self.side)[0]
         anim_eff, anim_upv = anim_root.duplicate(2)  # OPTIMIZATION
-        anim_eff.icon.connect = anim_root.anim
+        # anim_eff.icon.connect = anim_root.anim
         anim_upv.icon.shape = self.shape_color.get("upIcon")
         anim_upv.icon.color = self.shape_color.get(self.side)[1]
         anim_upv.icon.size = 0.25

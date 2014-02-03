@@ -16,6 +16,7 @@
 import naming
 from wishlib.si import si, siget
 from .rig import Rig
+from . import cache
 
 
 class RigLab(object):
@@ -23,10 +24,11 @@ class RigLab(object):
 
     def __init__(self):
         super(RigLab, self).__init__()
-        self.pool = dict()  # cache
 
     def add_rig(self, name):
-        return Rig.new(name)
+        r = Rig.new(name)
+        cache.rig[r.obj.FullName] = r
+        return r
 
     def list_rigs(self):
         result = list()
@@ -37,13 +39,17 @@ class RigLab(object):
         return result
 
     def get_rig(self, name):
+        # init cache
+        if not hasattr(cache, "rig"):
+            cache.rig = dict()
+        # get obj and init rig
         o = siget(name)
         if not o:
             return None
-        r = self.pool.get(name)  # cache
+        r = cache.rig.get(name)
         if not r:
             r = Rig(o)
-            self.pool[name] = r
+            cache.rig[name] = r
         return r
 
     @property

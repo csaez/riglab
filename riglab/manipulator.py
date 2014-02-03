@@ -198,7 +198,8 @@ class Manipulator(SIWrapper):
         if self._mute:
             return
         p = self._debug_prop()
-        siget(p + ".Reference").Value = self.active_space
+        cns = self.spaces["parent"].get(self.active_space) or self.spaces["orient"].get(self.active_space)
+        siget(p + ".Reference").Value = cns.Constraining(0).FullName
         siget(p + ".Debug").Value = value
 
     def _debug_prop(self):

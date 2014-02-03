@@ -19,6 +19,7 @@ import naming
 from wishlib.si import si, siget, C, SIWrapper
 from wishlib.utils import JSONDict
 
+from .. import cache
 from .. import utils
 from ..manipulator import Manipulator
 
@@ -43,8 +44,9 @@ class Base(SIWrapper):
         self.helper = {"root": None,
                        "hidden": list(),
                        "curve": None}
+        self._mute = True
         super(Base, self).__init__(obj, "Solver_Data")
-        self.manipulators_pool = dict()
+        self._mute = False
 
     def build(self, skeleton):
         if not self.validate(skeleton):
@@ -122,10 +124,12 @@ class Base(SIWrapper):
             viewvis.AddExpression(self.input.get("blendweight").FullName)
 
     def get_manipulator(self, name):
-        m = self.manipulators_pool.get(name)
-        if m is None:
+        if not hasattr(cache, "manip"):
+            cache.manip = dict()
+        m = cache.manip.get(name)
+        if not m:
             m = Manipulator(siget(name))
-            self.manipulators_pool[name] = m
+            cache.manip[name] = m
         return m
 
     @property
@@ -136,6 +140,8 @@ class Base(SIWrapper):
 
     @state.setter
     def state(self, value):
+        if self._mute:
+            return
         if self.input.get("active"):
             self.input.get("blendweight").Value = float(value)
             self.input.get("active").Value = value
@@ -226,6 +232,8 @@ class Base(SIWrapper):
 
     @id.setter
     def id(self, value):
+        if self._mute:
+            return
         splited = value.split("_")
         if len(splited) == 2:
             self.name = splited[0]

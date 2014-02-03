@@ -22,6 +22,7 @@ def XSILoadPlugin(in_reg):
     in_reg.Major = 1.0
     in_reg.Minor = 0.0
     in_reg.UserData = ""
+    in_reg.RegisterCommand("QuickLab", "quicklab")
     in_reg.RegisterCommand("RigLab Editor", "riglab")
     in_reg.RegisterCommand("Curve To Nulls", "curve2null")
     in_reg.RegisterCommand("Nulls To Curve", "null2curve")
@@ -33,6 +34,18 @@ def XSILoadPlugin(in_reg):
 
 def XSIUnloadPlugin(in_reg):
     log("{} has been unloaded".format(in_reg.Name), C.siVerbose)
+    return True
+
+
+def QuickLab_Execute():
+    log("QuickLab_Execute called", C.siVerbose)
+    if sisel.Count != 1:
+        return False
+    from PyQt4.QtGui import QCursor
+    from riglab.layout.quicklab import QuickLab
+    pos = QCursor.pos()
+    show_qt(QuickLab, modal=True,
+            onshow_event=lambda x: x.move(pos.x(), pos.y()))
     return True
 
 

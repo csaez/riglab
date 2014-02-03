@@ -288,7 +288,11 @@ class Editor(QMainWindow):
         if self._mute:
             return
         self.active_rig.apply_state(group_name, name, snap=self.autosnap)
-        self.reload_stack()
+
+    def space_changed(self, manip, space_name):
+        if self._mute:
+            return
+        manip.active_space = str(space_name)
 
     def groupSkeleton_clicked(self):
         if self.active_group is None:
@@ -504,7 +508,7 @@ class Editor(QMainWindow):
                     spaces.addItems(items)
                     QtCore.QObject.connect(
                         spaces, QtCore.SIGNAL("currentIndexChanged(QString)"),
-                        lambda space_name, manip=m: setattr(manip, "active_space", str(space_name)))
+                        lambda space_name, manip=m: self.space_changed(manip, space_name))
                     try:
                         spaces.setCurrentIndex(
                             items.index(m.active_space))

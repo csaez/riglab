@@ -20,6 +20,8 @@ from wishlib.si import si, simath, siget, sisel, SIWrapper
 
 from . import solvers
 from . import utils
+from . import cache
+from .manipulator import Manipulator
 
 
 class Rig(SIWrapper):
@@ -149,7 +151,6 @@ class Rig(SIWrapper):
         # restore stack states
         for i, x in enumerate(solver_stack):
             x.state = old_state[i]
-        # si.SelectObj(skeleton)  # restore selection
         return solver
 
     def remove_solver(self, solver_id):
@@ -164,16 +165,23 @@ class Rig(SIWrapper):
         self.update()
 
     def get_solver(self, solver_id):
-        # look for the solver in cache
-        s = self.solvers_pool.get(solver_id)
-        # if it's not there then reintantiate
-        if s is None:  # not cached
-            obj = self.solvers.get(solver_id)
-            if obj:
-                solver_class = SIWrapper(obj, "Solver_Data").classname
-                s = getattr(solvers, solver_class)(obj)
-                # add it to the pool
-                self.solvers_pool[solver_id] = s
+        # init cache
+        if not hasattr(cache, "solver"):
+            cache.solver = dict()
+        # get obj from solver_id
+        s = None
+        o = self.solvers.get(solver_id)
+        if o:
+            name = o.FullName
+            s = cache.solver.get(name)
+            if not s:
+                # init if not in cache
+                # solver_class = SIWrapper(o, "Solver_Data").classname
+                p = siget(name + ".Solver_Data.data_classname")
+                if p:
+                    solver_class = eval(eval(p.Value))
+                    s = getattr(solvers, solver_class)(o)
+                    cache.solver[name] = s
         return s
 
     def get_solvers(self, group_name=None):
@@ -452,8 +460,16 @@ class Rig(SIWrapper):
         return temp_name
 
     def get_manipulator(self, name):
-        for solver_name in self.solvers.keys():
-            solver = self.get_solver(solver_name)
-            for anim in solver.input.get("anim"):
-                if name == anim.Name:
-                    return solver.get_manipulator(anim.FullName)
+        if not hasattr(cache, "manip"):
+            cache.manip = dict()
+        name = self.obj.name + "." + name
+        m = cache.manip.get(name)
+        if not m:
+            m = Manipulator(siget(name))
+            cache.manip[name] = m
+        return m
+        # for solver_name in self.solvers.keys():
+        #     solver = self.get_solver(solver_name)
+        #     for anim in solver.input.get("anim"):
+        #         if name == anim.Name:
+        #             return solver.get_manipulator(anim.FullName)
