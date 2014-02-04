@@ -77,8 +77,7 @@ class Rig(SIWrapper):
         if not grp:
             return
         for solver_id in grp["solvers"]:
-            self.get_solver(solver_id).destroy()
-            del self.solvers[solver_id]
+            self.remove_solver(solver_id)
         del self.groups[name]
         self.update()
 
@@ -163,7 +162,8 @@ class Rig(SIWrapper):
                 name = solver.obj.FullName
                 solver.destroy()
                 del solver
-                del cache.solver[name]
+                if hasattr(cache, "solver"):
+                    del cache.solver[name]
         self.update()
 
     def get_solver(self, solver_id):
@@ -301,12 +301,16 @@ class Rig(SIWrapper):
                         internal = False
                         for x in solvers:
                             # internal deps
-                            a = [a.FullName for a in x.input["anim"]]
-                            if t in a:
-                                deps["internal"][x.id] = {"index": a.index(t),
-                                                          "name": name,
-                                                          "type": space_type}
-                                internal = True
+                            for p in ("anim", "skeleton"):
+                                print x.input[p]
+                                items = [a.FullName for a in x.input[p]]
+                                if t in items:
+                                    deps[
+                                        "internal"][x.id] = {"index": items.index(t),
+                                                             "dep_type": p,
+                                                             "name": name,
+                                                             "type": space_type}
+                                    internal = True
                         # external deps
                         if not internal:
                             deps["external"].append({"obj": t, "name": name,
@@ -357,7 +361,7 @@ class Rig(SIWrapper):
                 # internal
                 for ref, data in d["internal"].iteritems():
                     s = self.get_solver(table[ref])
-                    target = s.input["anim"][data["index"]]
+                    target = s.input[data["dep_type"]][data["index"]]
                     m.add_space(name=data["name"], target=target,
                                 space_type=data["type"])
                 # external

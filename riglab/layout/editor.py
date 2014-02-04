@@ -17,10 +17,11 @@ import os
 import json
 import webbrowser
 from collections import namedtuple
+from contextlib import contextmanager
 
 import naming
 from PyQt4 import QtCore, QtGui, uic
-from wishlib.qt.QtGui import QMainWindow
+from wishlib.qt.QtGui import QMainWindow, QProgressDialog
 from wishlib.si import si, sisel, show_qt
 from rigicon.layout.library_gui import RigIconLibrary
 
@@ -30,6 +31,14 @@ from .rename import Rename
 from .space_name import SpaceName
 from .shape_color import ShapeColor
 from .mapping import Mapping
+
+
+@contextmanager
+def pb():
+    d = show_qt(QProgressDialog)
+    d.repaint()
+    yield
+    d.close()
 
 
 class MyDelegate(QtGui.QItemDelegate):
@@ -209,9 +218,10 @@ class Editor(QMainWindow):
         skeleton = Mapping.get(self, t["mapping"]["skeleton"])
         if skeleton:
             t["mapping"]["skeleton"] = skeleton
-            self.active_rig.apply_template(self.active_group, t,
-                                           icon=copy_icons or True)
-            self.reload_stack()
+            with pb():
+                self.active_rig.apply_template(self.active_group, t,
+                                               icon=copy_icons or True)
+                self.reload_stack()
 
     def savetemplate_clicked(self):
         if not self.active_group:
@@ -328,17 +338,19 @@ class Editor(QMainWindow):
             return
         data = self.get_name(solver_type, self.active_group.split("_")[-1])
         if data and len(data.name):
-            self.active_rig.add_solver(
-                solver_type, self.active_group, name=data.name, side=data.side)
-            self.reload_stack()
-            self.raise_()
+            with pb():
+                self.active_rig.add_solver(solver_type, self.active_group,
+                                           name=data.name, side=data.side)
+                self.reload_stack()
+                self.raise_()
 
     def removesolver_clicked(self, solver=None):
         if not self.active_solver:
             return
         solver_name = str(self.ui.stack.currentItem().text(0))
-        self.active_rig.remove_solver(solver_name)
-        self.reload_stack()
+        with pb():
+            self.active_rig.remove_solver(solver_name)
+            self.reload_stack()
 
     def snapsolver_clicked(self):
         if not self.active_solver:

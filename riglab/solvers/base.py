@@ -148,7 +148,7 @@ class Base(SIWrapper):
 
     def destroy(self):
         for x in self.input.get("anim"):
-            del cache.manip[x]
+            del cache.manip[x.FullName]
         si.DeleteObj("B:{}".format(self.obj))
 
     def snap(self):
