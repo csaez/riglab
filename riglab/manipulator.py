@@ -70,6 +70,7 @@ class Manipulator(SIWrapper):
                     continue
                 for p, v in d.iteritems():
                     cns.Parameters(p).Value = v
+        self.zero.Kinematics.Local.Transform = simath.CreateTransform()
 
     def add_space(self, name=None, target=None, space_type="parent"):
         if not target or space_type.lower() not in ("parent", "orient"):
@@ -198,7 +199,8 @@ class Manipulator(SIWrapper):
         if self._mute:
             return
         p = self._debug_prop()
-        cns = self.spaces["parent"].get(self.active_space) or self.spaces["orient"].get(self.active_space)
+        cns = self.spaces["parent"].get(self.active_space) or self.spaces[
+            "orient"].get(self.active_space)
         siget(p + ".Reference").Value = cns.Constraining(0).FullName
         siget(p + ".Debug").Value = value
 

@@ -125,8 +125,9 @@
      </property>
      <addaction name="addFK"/>
      <addaction name="addIK"/>
-     <addaction name="separator"/>
      <addaction name="addSplineIK"/>
+     <addaction name="separator"/>
+     <addaction name="autoName"/>
     </widget>
     <addaction name="addGroup"/>
     <addaction name="removeGroup"/>
@@ -325,7 +326,7 @@
   </action>
   <action name="autoSnap">
    <property name="text">
-    <string>Auto-snap</string>
+    <string>Auto-Snap</string>
    </property>
   </action>
   <action name="namingConvention">
@@ -431,6 +432,11 @@
   <action name="fromSelection">
    <property name="text">
     <string>Get Manipulator From Softimage</string>
+   </property>
+  </action>
+  <action name="autoName">
+   <property name="text">
+    <string>Auto-Name</string>
    </property>
   </action>
  </widget>

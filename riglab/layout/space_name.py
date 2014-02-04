@@ -16,12 +16,11 @@
 import os
 from collections import namedtuple
 
-from PyQt4 import uic
-from PyQt4.QtGui import QDialog
+from PyQt4 import uic, QtGui
 from naming import Manager as nm
 
 
-class SpaceName(QDialog):
+class SpaceName(QtGui.QDialog):
     side_data = nm().tokens["side"].values
     data_type = namedtuple("space_data", ["name", "type"])
 
@@ -31,6 +30,7 @@ class SpaceName(QDialog):
         self.ui = uic.loadUi(os.path.join(ui_dir, "rename.ui"), self)
         self.setWindowTitle("Space Name")
         self.ui.space_type = self.ui.side
+        self.ui.side_label.setText("Type")
 
     @classmethod
     def get_data(cls, parent=None, space_name=None, space_type="parent"):

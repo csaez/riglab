@@ -61,11 +61,10 @@ class Rig(SIWrapper):
         self._skeleton = list()
         self._meshes = list()
         self.solvers = dict()
+        self._mute = True
         super(Rig, self).__init__(model, "rig_data")
+        self._mute = False
         self.name = self.obj.Name
-        # solver's cache,
-        # it's not serialized because of softimage indirect dependencies
-        self.solvers_pool = dict()
 
     def add_group(self, name):
         self.groups[name] = {"solvers": list(),
@@ -161,7 +160,10 @@ class Rig(SIWrapper):
                 v["solvers"] = [x for x in v["solvers"] if x != solver_id]
                 for name, state in v["states"].iteritems():
                     del v["states"][name][solver.id]
+                name = solver.obj.FullName
                 solver.destroy()
+                del solver
+                del cache.solver[name]
         self.update()
 
     def get_solver(self, solver_id):
@@ -379,6 +381,8 @@ class Rig(SIWrapper):
 
     @mode.setter
     def mode(self, value):
+        if self._mute:
+            return
         # _snapshot stores the solver states in order to switch modes
         if not hasattr(self, "_snapshot"):
             self._snapshot = dict()
@@ -404,6 +408,8 @@ class Rig(SIWrapper):
 
     @skeleton.setter
     def skeleton(self, value):
+        if self._mute:
+            return
         self._skeleton = sorted(value, key=utils.deep)
         self.parent_to(self._skeleton, self.holders["skeleton"])
         self.update()
@@ -414,6 +420,8 @@ class Rig(SIWrapper):
 
     @meshes.setter
     def meshes(self, value):
+        if self._mute:
+            return
         self._meshes = sorted(value, key=utils.deep)
         self.parent_to(self._meshes, self.holders["meshes"])
         self.update()
@@ -468,8 +476,3 @@ class Rig(SIWrapper):
             m = Manipulator(siget(name))
             cache.manip[name] = m
         return m
-        # for solver_name in self.solvers.keys():
-        #     solver = self.get_solver(solver_name)
-        #     for anim in solver.input.get("anim"):
-        #         if name == anim.Name:
-        #             return solver.get_manipulator(anim.FullName)

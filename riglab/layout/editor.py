@@ -16,6 +16,7 @@
 import os
 import json
 import webbrowser
+from collections import namedtuple
 
 import naming
 from PyQt4 import QtCore, QtGui, uic
@@ -23,7 +24,8 @@ from wishlib.qt.QtGui import QMainWindow
 from wishlib.si import si, sisel, show_qt
 from rigicon.layout.library_gui import RigIconLibrary
 
-from .. import riglab
+import riglab
+from .. import cache
 from .rename import Rename
 from .space_name import SpaceName
 from .shape_color import ShapeColor
@@ -49,10 +51,10 @@ class Editor(QMainWindow):
 
     def __init__(self, parent=None):
         super(Editor, self).__init__(parent)
-        self.riglab = riglab.RigLab()
         self._clipboard = None
         self._mute = False
         self._index = -1
+        self.autoname = False
         self.initUI()
 
     def initUI(self):
@@ -88,7 +90,7 @@ class Editor(QMainWindow):
         self.ui.removeGroup.triggered.connect(self.removegroup_clicked)
         self.ui.addState.triggered.connect(self.savestate_clicked)
         self.ui.removeState.triggered.connect(self.removestate_clicked)
-        self.ui.autoSnap.triggered.connect(self.autosnap_clicked)
+        self.ui.autoSnap.triggered.connect(self.autosnap_toggled)
         self.ui.groupSkeleton.triggered.connect(self.groupSkeleton_clicked)
         self.ui.groupManipulators.triggered.connect(
             self.groupManipulators_clicked)
@@ -97,6 +99,7 @@ class Editor(QMainWindow):
         self.ui.addIK.triggered.connect(lambda: self.addsolver_clicked("IK"))
         self.ui.addSplineIK.triggered.connect(
             lambda: self.addsolver_clicked("SplineIK"))
+        self.ui.autoName.triggered.connect(self.autoname_toggled)
         self.ui.removeBehaviour.triggered.connect(self.removesolver_clicked)
         self.ui.snap.triggered.connect(self.snapsolver_clicked)
         self.ui.inspect.triggered.connect(self.inspectsolver_clicked)
@@ -119,14 +122,28 @@ class Editor(QMainWindow):
             lambda: webbrowser.open("http://github.com/csaez/riglab", new=2))
         # set active rig
         self.active_rig = None  # disable gui
-        rigs = self.riglab.list_rigs()
+        rigs = riglab.list_rigs()
         if len(rigs):
-            self.active_rig = self.riglab.get_rig(rigs[0])
-        # set autosnap's default to True
-        self.autosnap = False
-        self.autosnap_clicked()  # update icon
+            self.active_rig = riglab.get_rig(rigs[0])
+        # set autosnap's default to True or read from cache
+        self.autosnap = True
+        if hasattr(cache, "autosnap"):
+            self.autosnap = cache.autosnap
+        self.autosnap_toggled(icon_only=True)  # update icon
+        # set autoname off or read from cache
+        self.autoname = False
+        if hasattr(cache, "autoname"):
+            self.autoname = cache.autoname
+        self.autoname_toggled(icon_only=True)
 
     # SLOTS
+    def autoname_toggled(self, icon_only=False):
+        if not icon_only:
+            self.autoname = not self.autoname
+            cache.autoname = self.autoname
+        icon = (QtGui.QIcon(), QtGui.QIcon(self.IMAGES.get("check")))
+        self.ui.autoName.setIcon(icon[int(self.autoname)])
+
     def renameitem_clicked(self, model_index):
         # enabled just for groups
         if not self.active_group:
@@ -162,7 +179,7 @@ class Editor(QMainWindow):
         name, ok = QtGui.QInputDialog.getText(self, "New Rig", "Rig name:")
         if not ok:
             return
-        self.active_rig = self.riglab.add_rig(str(name))
+        self.active_rig = riglab.add_rig(str(name))
 
     def mode_changed(self, index):
         if self._mute or not self.active_rig:
@@ -279,8 +296,10 @@ class Editor(QMainWindow):
         del self.active_rig.groups[self.active_group]["states"][str(n)]
         self.reload_stack()
 
-    def autosnap_clicked(self):
-        self.autosnap = not self.autosnap
+    def autosnap_toggled(self, icon_only=False):
+        if not icon_only:
+            self.autosnap = not self.autosnap
+            cache.autosnap = self.autosnap
         icon = (QtGui.QIcon(), QtGui.QIcon(self.IMAGES.get("check")))
         self.ui.autoSnap.setIcon(icon[int(self.autosnap)])
 
@@ -354,7 +373,7 @@ class Editor(QMainWindow):
         picked = si.PickObject()("PickedElement")
         if picked:
             ok, data = SpaceName.get_data(
-                parent=self, space_name=picked.FullName)
+                parent=self, space_name="")
             if ok:
                 m.add_space(
                     name=data.name, target=picked, space_type=data.type)
@@ -434,12 +453,12 @@ class Editor(QMainWindow):
         self._mute = True
         # add scene rigs
         action_names = [str(a.text()) for a in self.ui.activeRig.actions()]
-        for i, rig_name in enumerate(self.riglab.list_rigs()):
+        for i, rig_name in enumerate(riglab.list_rigs()):
             if rig_name not in action_names:
                 action = self.ui.activeRig.addAction(rig_name)
                 QtCore.QObject.connect(
                     action, QtCore.SIGNAL("triggered()"),
-                    lambda v=rig_name: setattr(self, "active_rig", self.riglab.get_rig(v)))
+                    lambda v=rig_name: setattr(self, "active_rig", riglab.get_rig(v)))
         if not self.active_rig:
             self._mute = False
             return
@@ -550,15 +569,15 @@ class Editor(QMainWindow):
 
     @property
     def active_rig(self):
-        r = self.riglab.list_rigs()[self._index] if self._index >= 0 else None
-        return self.riglab.get_rig(r) or None
+        r = riglab.list_rigs()[self._index] if self._index >= 0 else None
+        return riglab.get_rig(r) or None
 
     @active_rig.setter
     def active_rig(self, rig):
         self.disable_gui(rig is not None)
         if rig is None:
             return
-        self._index = self.riglab.list_rigs().index(rig.name)
+        self._index = riglab.list_rigs().index(rig.name)
         self.reload_stack()
 
     @property
@@ -586,6 +605,9 @@ class Editor(QMainWindow):
         return None
 
     def get_name(self, default_name=None, default_side="C"):
+        if default_name and self.autoname:
+            result = (default_name, default_side)
+            return namedtuple("name_data", ["name", "side"])._make(result)
         ok, data = Rename.get_data(
             parent=self, name=default_name, side=default_side)
         if ok:

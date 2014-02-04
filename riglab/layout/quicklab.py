@@ -18,7 +18,7 @@ import os
 from wishlib.si import si, sisel
 from wishlib.qt.QtGui import QMenu
 
-from PyQt4.QtGui import QIcon
+from PyQt4.QtGui import QInputDialog, QIcon
 
 from .space_name import SpaceName
 from ..manipulator import Manipulator
@@ -94,15 +94,22 @@ class QuickLab(QMenu):
     def setup_ui(self):
         icon = (QIcon(), QIcon(self.IMAGES.get("check")))
         # space switching
-        s = self.addMenu("Space Switching")
-        a = s.addAction("New...")
-        a.triggered.connect(lambda x: self.new_space())
+        len_sp = len(self.spaces)
+        s = self.addMenu("Spaces")
+        s.addAction("New...").triggered.connect(lambda x: self.new_space())
+        if len_sp:
+            s.addAction("Remove...").triggered.connect(
+                lambda x: self.remove_space())
+            if len_sp > 1:
+                s.addAction("Reset").triggered.connect(
+                    lambda x: self.manip.reset_spaces())
         s.addSeparator()
-        for x in set(self.spaces):
+        for x in self.spaces:
             a = s.addAction(x)
             a.setIcon(icon[int(x == self.active_space)])
             a.triggered.connect(lambda b, n=x: self.set_space(n))
-        for x in set(self.states):
+        # states
+        for x in self.states:
             a = self.addAction(x)
             a.setIcon(icon[int(x == self.active_state)])
             a.triggered.connect(lambda b, n=x: self.set_state(n))
@@ -120,4 +127,9 @@ class QuickLab(QMenu):
             if ok:
                 self.manip.add_space(name=data.name, target=picked,
                                      space_type=data.type)
-                # m.active_space = data.name
+
+    def remove_space(self):
+        n, ok = QInputDialog.getItem(self, "Remove Space", "Spaces:",
+                                     self.spaces, 0, False)
+        if ok:
+            self.manip.remove_space(str(n))
