@@ -43,3 +43,18 @@
 2014-01-29 13:31:19     8035   +15    -4 277a7a2 cesarte@gmail.com 	BUGFIX: preserve skeleton's pose from disabled solvers
 2014-01-29 17:56:51     8035    +2    -2 9f5ed42 cesarte@gmail.com 	BUGFIX: side on manipulators name
 2014-01-29 23:11:21     8154  +142   -23 efcaae4 cesarte@gmail.com 	group_data (templates) and mapping gui
+2014-01-30 03:21:52     8299  +262  -117 7a7ac2e cesarte@gmail.com 	License GPL3
+2014-01-30 17:25:59     8296   +23   -26 95eb0cf cesarte@gmail.com 	typo
+2014-01-30 22:36:19     8356   +72   -12 44f7f94 cesarte@gmail.com 	template files (JSON based)
+2014-01-31 19:59:16     8388   +32    -0 b11c982 cesarte@gmail.com 	templates specs
+2014-01-31 20:10:01     8388   +12   -12 70d8861 cesarte@gmail.com 	template specs (reformatting)
+2014-01-31 20:37:03     8418   +45   -15 c2435c4 cesarte@gmail.com 	Templates: solver + internal dependencies working
+2014-01-31 20:56:27     8428   +12    -2 87f5fa4 cesarte@gmail.com 	Templates: states working!
+2014-01-31 21:00:45     8431    +3    -0 54b7c61 cesarte@gmail.com 	templates specs: include states
+2014-02-01 18:01:47     8461   +78   -48 0b8bca4 cesarte@gmail.com 	BUGFIX: state restored on reload_stack()
+2014-02-01 18:53:49     8463    +8    -6 616ecea cesarte@gmail.com 	BUGFIX: incorrect name on solvers' helpers/outputs
+2014-02-02 16:55:20     8629  +250   -84 b43c8c9 cesarte@gmail.com 	space types: "parent" or "orient"
+2014-02-02 16:57:20     8625    +0    -4 152d3c7 cesarte@gmail.com 	external spaces support
+2014-02-02 20:45:09     8626   +22   -21 9ef429b cesarte@gmail.com 	external/internal dependencies (templates+auto-snap)
+2014-02-03 20:09:40     8797  +199   -28 d7af7d6 cesarte@gmail.com 	quicklab + unified cache
+2014-02-04 02:29:32     8839  +137   -95 1025235 cesarte@gmail.com 	cleanup
