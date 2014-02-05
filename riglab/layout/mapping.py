@@ -36,12 +36,14 @@ class Mapping(QDialog):
 
     def __init__(self, *args, **kwds):
         super(Mapping, self).__init__(*args, **kwds)
+        self.data = {}
         self.setup_ui()
 
     def setup_ui(self):
         self.resize(485, 410)
-        horizontalLayout = QtGui.QHBoxLayout(self)
-        horizontalLayout.setMargin(6)
+        self.horizontalLayout = QtGui.QHBoxLayout(self)
+        self.horizontalLayout.setMargin(6)
+        self.verticalLayout = QtGui.QVBoxLayout()
         self.skeleton = TableSwitcher(self)
         self.skeleton.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.skeleton.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
@@ -53,27 +55,22 @@ class Mapping(QDialog):
         self.skeleton.setHorizontalHeaderItem(0, item)
         self.skeleton.horizontalHeader().setVisible(True)
         self.skeleton.horizontalHeader().setStretchLastSection(True)
-        horizontalLayout.addWidget(self.skeleton)
-        verticalLayout = QtGui.QVBoxLayout()
-        buttonBox = QtGui.QDialogButtonBox(self)
-        sizePolicy = QtGui.QSizePolicy(
-            QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            buttonBox.sizePolicy().hasHeightForWidth())
-        buttonBox.setSizePolicy(sizePolicy)
-        buttonBox.setOrientation(QtCore.Qt.Vertical)
-        buttonBox.setStandardButtons(
+        self.verticalLayout.addWidget(self.skeleton)
+        self.icons = QtGui.QCheckBox(self)
+        self.icons.setText("Transfer curves")
+        self.icons.setChecked(True)
+        self.verticalLayout.addWidget(self.icons)
+        self.negate = QtGui.QCheckBox(self)
+        self.negate.setText("Negate transforms (symmetry)")
+        self.verticalLayout.addWidget(self.negate)
+        self.horizontalLayout.addLayout(self.verticalLayout)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Vertical)
+        self.buttonBox.setStandardButtons(
             QtGui.QDialogButtonBox.Cancel | QtGui.QDialogButtonBox.Ok)
-        verticalLayout.addWidget(buttonBox)
-        spacerItem = QtGui.QSpacerItem(
-            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        verticalLayout.addItem(spacerItem)
-        horizontalLayout.addLayout(verticalLayout)
-        # connect signals
-        buttonBox.accepted.connect(self.accept)
-        buttonBox.rejected.connect(self.reject)
+        self.horizontalLayout.addWidget(self.buttonBox)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
 
     def reload(self, skeleton_dict):
         ratio = lambda x, y: SequenceMatcher(None, x, y). ratio()
@@ -97,6 +94,8 @@ class Mapping(QDialog):
         for i, k in enumerate(keys):
             item = self.skeleton.item(0, i)
             self.skeleton_dict[k] = str(item.text())
+        self.data["skeleton"] = self.skeleton_dict
+        self.data["icons"] = self.icons.isChecked()
         super(Mapping, self).accept()
 
     @classmethod
@@ -104,4 +103,4 @@ class Mapping(QDialog):
         m = cls(parent)
         m.reload(skeleton_dict)
         if m.exec_():
-            return m.skeleton_dict
+            return m.data

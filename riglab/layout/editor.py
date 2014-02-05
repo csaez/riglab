@@ -209,18 +209,19 @@ class Editor(QMainWindow):
             return
         self._clipboard = self.active_rig.get_template(self.active_group)
 
-    def pastetemplate_clicked(self, copy_icons=None):
+    def pastetemplate_clicked(self):
         if not self._clipboard:
             return
         if self._clipboard.get("filetype") != "riglab:group_template":
             return
         t = self._clipboard
-        skeleton = Mapping.get(self, t["mapping"]["skeleton"])
+        data = Mapping.get(self, t["mapping"]["skeleton"])
+        skeleton = data.get("skeleton")
         if skeleton:
             t["mapping"]["skeleton"] = skeleton
             with pb():
                 self.active_rig.apply_template(self.active_group, t,
-                                               icon=copy_icons or True)
+                                               icon=data.get("icons"))
                 self.reload_stack()
 
     def savetemplate_clicked(self):
@@ -259,7 +260,7 @@ class Editor(QMainWindow):
             if template.get("filetype") == "riglab_template":
                 # set to clipboard and load
                 self._clipboard = template
-                self.pastetemplate_clicked(False)
+                self.pastetemplate_clicked()
 
     def addgroup_clicked(self):
         data = self.get_name()
@@ -317,6 +318,7 @@ class Editor(QMainWindow):
         if self._mute:
             return
         self.active_rig.apply_state(group_name, name, snap=self.autosnap)
+        self.reload_stack()
 
     def space_changed(self, manip, space_name):
         if self._mute:

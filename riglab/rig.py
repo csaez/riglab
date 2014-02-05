@@ -243,6 +243,8 @@ class Rig(SIWrapper):
                 for solver_id in d:
                     if deps.get(solver_id):
                         l.extend(deps.get(solver_id))
+                    if solver_id in l:
+                        l.append(solver_id)
             c = collections.Counter(l)
             for solver_id in sorted(deps.keys(), key=lambda x: c[x], reverse=True):
                 solver = self.get_solver(solver_id)
@@ -302,7 +304,6 @@ class Rig(SIWrapper):
                         for x in solvers:
                             # internal deps
                             for p in ("anim", "skeleton"):
-                                print x.input[p]
                                 items = [a.FullName for a in x.input[p]]
                                 if t in items:
                                     deps[

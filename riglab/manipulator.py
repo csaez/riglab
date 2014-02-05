@@ -78,7 +78,6 @@ class Manipulator(SIWrapper):
         # validate name
         name = name or target.Name
         if name in self.list_spaces():
-            print "ERROR: invalid name"
             return
         # add cns
         tm = self.zero.Kinematics.Global.Transform
