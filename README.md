@@ -11,49 +11,48 @@ Dependencies
 
 Installation
 ------------
+Get a xsiaddon file from [here](#) and drop it on a softimage viewport
+(includes wishlib, rigicon and naming packages).
 
-- Get a xsiaddon file from [here](#) and drop it on a softimage viewport
-(includes wishlib, rigicon and naming modules).
+*or...*
 
-or...
-
-- Clone the repo, copy `riglab_plugin.py` to a Softimage plugin directory
-and install the python modules typing in a terminal.
+Copy `riglab_plugin.py` to a Softimage plugin directory, clone the repo and
+install the python modules typing in a terminal.
 
     python setup.py install
 
 Goals
 -----
-RigLab is in the making, but I thought it could be important list the
-project's goals in order to justify why I think we could do better
-than current rigging conventions and invite developers/riggers to collaborate
-with me.
+`riglab` is in the making, but it is important set the goals of the project
+early on in order to justify why I think we could do better than current
+rigging conventions.
 
-- **Deformation first**: A lot of auto-rigs out there uses a guide system
-to create a skeleton+animation system making really hard relocate the
-articulation points once the setup is created. RigLab encourage a completally
-different approach, it allow set different solvers/behaviours to an existing
-skeleton (like adjustment layers in photoshop), so you can create and test
-the skeleton before apply any animation system keeping things simple.
+- **Deformation first**: A lot of auto-riggers out there use a guide system
+to create the skeleton and animation rig at the same time, making really hard
+iterate over the joint placement once the setup is created (rebuild tend to
+be the only option). `riglab` encourages a different approach, where you
+have to solve joint placement first, when everything is still clean and
+simple, and then feed `riglab` with that skeleton in order to assign different
+behaviors creating your animation rig.
 
-- **Prototyping**: RigLab works at a lower level than the typical modular
-autorig, but not as lower as vanilla constraints, it allow grouping and
-multiple behaviour in the same joints making prototyping much easier
-on a wide range of characters/props/environments.
+- **Prototyping**: `riglab` works at a lower level than most modular auto-riggers,
+but not as lower as vanilla DCCs, this allow solve a wide range of rigs using
+behaviours as the generic building block, solving snaping between states
+and multiple spaces "for free".
 
-- **Editing**: again, there's plenty of nice autorig scripts out there, but
-most of them just manage the creation process and then dump the results
-into the 3d scene leaving the editing side up to you. RigLab is not just
-about creation, it's session persistent and gives you access to existing
-rigs via a python API (this is also important for animation tools).
+- **Editing**: most auto-rigger scripts manage the creation process and
+dump the results into the 3d scene, leaving the editing side up to
+you. `riglab` is not just about creation, it is session persistent and gives
+you access to existing rigs via a rich python API or GUI tools (this is also
+important for animation tools).
 
-- **Reusability**: RigLab implements serialization/templating mechanisms,
-this way you can reuse any previous configuration without write a single
-line of code (sort of autorigs for free).
+- **Reusability**: `riglab` implements a quite powerfull templating system,
+this allows re-use any previous configuration without write a single
+line of code.
 
-- **Pipeline friendly**: Riglab is highly customizable; names, shapes, solvers
-and almost every component is selected from a customizable library and
-configuration files (JSON) with default values that make sense.
+- **Pipeline friendly**: `riglab` is highly customizable: names, shapes,
+solvers and almost every component is selected from a library or defined by
+text configuration files.
 
 Ussage
 ------
