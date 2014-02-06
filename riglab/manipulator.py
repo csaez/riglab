@@ -25,6 +25,7 @@ from . import utils
 class Manipulator(SIWrapper):
     nm = naming.Manager()
     DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+    PROP_NAME = "Manipulator_Data"
 
     def __init__(self, obj):
         self.spaces = {"parent": dict(), "orient": dict()}
@@ -38,7 +39,7 @@ class Manipulator(SIWrapper):
                                      0, 0, 0, 1)}
         self._invert = False
         self._mute = True
-        super(Manipulator, self).__init__(obj, "Manipulator_Data")
+        super(Manipulator, self).__init__(obj, self.PROP_NAME)
         self._mute = False
         self.anim = obj
         self.icon = Icon(self.anim)

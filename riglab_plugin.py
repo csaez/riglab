@@ -29,6 +29,7 @@ def XSILoadPlugin(in_reg):
     in_reg.RegisterCommand("Align Nulls To Curve", "align2curve")
     in_reg.RegisterCommand("Orthogonalize Selection", "orthogonalize")
     in_reg.RegisterCommand("Draw Linear Curve Into Mesh", "draw_linear_curve")
+    in_reg.RegisterEvent("CloseScene", C.siOnCloseScene)
     return True
 
 
@@ -91,4 +92,15 @@ def OrthogonalizeSelection_Execute():
     from riglab.utils import orthogonalize, deep
     for obj in sorted(list(sisel), key=deep):
         orthogonalize(obj)
+    return True
+
+
+def CloseScene_OnEvent(in_ctxt):
+    log("CloseScene_OnEvent called", C.siVerbose)
+    import sys
+    module = "riglab"
+    if len(module):
+        for k in sys.modules.keys():
+            if k.startswith(module):
+                del sys.modules[k]
     return True

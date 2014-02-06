@@ -94,8 +94,13 @@ class QuickLab(QMenu):
     def setup_ui(self):
         icon = (QIcon(), QIcon(self.IMAGES.get("check")))
         # space switching
-        len_sp = len(self.spaces)
         s = self.addMenu("Spaces")
+        for x in self.spaces:
+            a = s.addAction(x)
+            a.setIcon(icon[int(x == self.active_space)])
+            a.triggered.connect(lambda b, n=x: self.set_space(n))
+        s.addSeparator()
+        len_sp = len(self.spaces)
         s.addAction("New...").triggered.connect(lambda x: self.new_space())
         if len_sp:
             s.addAction("Remove...").triggered.connect(
@@ -103,11 +108,6 @@ class QuickLab(QMenu):
             if len_sp > 1:
                 s.addAction("Reset").triggered.connect(
                     lambda x: self.manip.reset_spaces())
-        s.addSeparator()
-        for x in self.spaces:
-            a = s.addAction(x)
-            a.setIcon(icon[int(x == self.active_space)])
-            a.triggered.connect(lambda b, n=x: self.set_space(n))
         # states
         for x in self.states:
             a = self.addAction(x)

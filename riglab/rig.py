@@ -243,10 +243,10 @@ class Rig(SIWrapper):
                 for solver_id in d:
                     if deps.get(solver_id):
                         l.extend(deps.get(solver_id))
-                    if solver_id in l:
-                        l.append(solver_id)
             c = collections.Counter(l)
-            for solver_id in sorted(deps.keys(), key=lambda x: c[x], reverse=True):
+            ordered = sorted(deps.keys(), key=lambda x: c[x], reverse=True)
+            print "DEBUG - snap order:", ordered
+            for solver_id in ordered:
                 solver = self.get_solver(solver_id)
                 if not solver.state:
                     solver.snap()  # snap

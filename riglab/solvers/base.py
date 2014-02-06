@@ -127,7 +127,7 @@ class Base(SIWrapper):
         if not hasattr(cache, "manip"):
             cache.manip = dict()
         m = cache.manip.get(name)
-        if not m:
+        if not m and siget(name + ".Manipulator_Data"):
             m = Manipulator(siget(name))
             cache.manip[name] = m
         return m

@@ -256,11 +256,9 @@ class Editor(QMainWindow):
             # load from json
             with open(str(fn)) as f:
                 template = json.load(f)
-            # check file type
-            if template.get("filetype") == "riglab_template":
-                # set to clipboard and load
-                self._clipboard = template
-                self.pastetemplate_clicked()
+            # set to clipboard and load
+            self._clipboard = template
+            self.pastetemplate_clicked()
 
     def addgroup_clicked(self):
         data = self.get_name()
