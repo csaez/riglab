@@ -48,7 +48,7 @@ class Base(SIWrapper):
         super(Base, self).__init__(obj, "Solver_Data")
         self._mute = False
 
-    def build(self, skeleton):
+    def build(self, skeleton, negate=False):
         if not self.validate(skeleton):
             return
         self.input["skeleton"] = list(skeleton)
@@ -70,6 +70,7 @@ class Base(SIWrapper):
         self.custom_inputs()
         # anim controls
         self.create_anim()
+        self.invert_anim(negate)
         # solver implementation
         self.custom_build()
         # connect
@@ -92,6 +93,11 @@ class Base(SIWrapper):
                 self.name, "curve", side=self.side)
             self.helper["hidden"].append(self.helper.get("curve"))
         self.custom_anim()
+
+    def invert_anim(self, negate=False):
+        for a in sorted(self.input["anim"], key=utils.deep):
+            manip = self.get_manipulator(a.FullName)
+            manip.invert = negate
 
     def connect(self, compensate=True):
         skeleton = self.input.get("skeleton")
@@ -163,7 +169,7 @@ class Base(SIWrapper):
         self.state = state
 
     @classmethod
-    def new(cls, skeleton, name=None, root=None, side="C"):
+    def new(cls, skeleton, name=None, root=None, side="C", negate=False):
         if not cls.validate(skeleton):
             return
         root = root or si.ActiveSceneRoot
@@ -189,7 +195,7 @@ class Base(SIWrapper):
                                        s.output.get("root"),
                                        s.helper.get("root")])
         # build
-        s.build(skeleton)
+        s.build(skeleton, negate=negate)
         s.update()  # update mutable data serialization
         return s
 

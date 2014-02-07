@@ -231,7 +231,8 @@ class Manipulator(SIWrapper):
     def invert(self, value):
         if self._mute:
             return
-        value = -1.0 if value else 1.0
-        for a in "xyz":
-            self.zero.Kinematics.Local.Parameters("scl" + a).Value = value
         self._invert = value
+        value = (-1.0, 180) if value else (1.0, 0)
+        for a in "xyz":
+            self.zero.Kinematics.Local.Parameters("nscl" + a).Value = value[0]
+        self.zero.Kinematics.Local.Parameters("nrotz").Value = value[1]

@@ -119,7 +119,7 @@ class Rig(SIWrapper):
             data.extend(query_function(solver))
         return data
 
-    def add_solver(self, solver_type, group_name, skeleton=None, name=None, side="C"):
+    def add_solver(self, solver_type, group_name, skeleton=None, name=None, side="C", negate=False):
         if self.groups.get(group_name) is None or not hasattr(solvers, solver_type) or not sisel.Count:
             return
         # save selection
@@ -140,8 +140,8 @@ class Rig(SIWrapper):
         side = str(side)
         name = self.unique_name(name, side)
         solver_class = getattr(solvers, solver_type)
-        solver = solver_class.new(
-            skeleton, name, self.holders["solvers"], side=side)
+        solver = solver_class.new(skeleton, name, self.holders["solvers"],
+                                  side=side, negate=negate)
         self.solvers[solver.id] = solver.obj  # save solver root
         # groups
         self.groups[group_name]["solvers"].append(solver.id)
@@ -322,7 +322,7 @@ class Rig(SIWrapper):
         return {"mapping": mapping, "data": data,
                 "filetype": "riglab:group_template", "version": "1.0"}
 
-    def apply_template(self, group_id, template, invert=False, icon=True):
+    def apply_template(self, group_id, template, invert=False, icon=True, negate=False):
         # validate
         if not self.groups.get(group_id):
             print "WARNING: invalid group_id."
@@ -344,7 +344,7 @@ class Rig(SIWrapper):
             sk = [siget(x) for x in sk]
             # add solver
             s = self.add_solver(solver_data["class"], group_id, skeleton=sk,
-                                name=solver_data["name"][:-2], side=side)
+                                name=solver_data["name"][:-2], side=side, negate=negate)
             # set icon data
             if icon:
                 curve_data = template["data"][solver_id]["icons"]

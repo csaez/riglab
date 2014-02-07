@@ -96,6 +96,7 @@ class Mapping(QDialog):
             self.skeleton_dict[k] = str(item.text())
         self.data["skeleton"] = self.skeleton_dict
         self.data["icons"] = self.icons.isChecked()
+        self.data["negate"] = self.negate.isChecked()
         super(Mapping, self).accept()
 
     @classmethod

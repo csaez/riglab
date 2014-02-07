@@ -54,6 +54,10 @@ class FK(Base):
                 [each.orient, each.zero, each.space])
         self.input["anim"] = [x.anim for x in anim]
 
+    def invert_anim(self, negate=False):
+        manip = self.get_manipulator(self.input["anim"][0].FullName)
+        manip.invert = negate
+
     def custom_build(self):
         super(FK, self).custom_build()
         skeleton = self.input.get("skeleton")

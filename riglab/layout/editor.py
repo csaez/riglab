@@ -221,7 +221,8 @@ class Editor(QMainWindow):
             t["mapping"]["skeleton"] = skeleton
             with pb():
                 self.active_rig.apply_template(self.active_group, t,
-                                               icon=data.get("icons"))
+                                               icon=data.get("icons"),
+                                               negate=data.get("negate"))
                 self.reload_stack()
 
     def savetemplate_clicked(self):
