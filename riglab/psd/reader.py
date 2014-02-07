@@ -73,7 +73,14 @@ class ConeReader(PoseReader):
 
     @target.setter
     def target(self, value):
-        self._setvalue("SceneReferenceNode.reference", value.FullName, False)
+        value = value.FullName if siget(value) else ""
+        self._setvalue("SceneReferenceNode.reference", value, False)
+
+    @property
+    def value(self):
+        if self.target:
+            geo = self.obj.ActivePrimitive.Geometry
+            return geo.ICEAttributes("ReaderValue").DataArray[0]
 
     def show(self):
         si.InspectObj(".".join([self._ICE.FullName, self.COMPOUND]))

@@ -49,10 +49,15 @@ class IK(Base):
             self.helper.get("hidden").extend(
                 [ctrl.orient, ctrl.zero, ctrl.space])
         # align
+        sk = self.input.get("skeleton")
         data = utils.curve_data(self.helper["curve"])
-        utils.align_matrix4(anim_root.orient, data[0][0])
-        utils.align_matrix4(anim_eff.orient, data[0][-1])
-        utils.align_matrix4(anim_upv.orient, data[0][0])
+        if len(sk) > 2:
+            anim_root.align_matrix4(data[0][0])
+            anim_eff.align_matrix4(data[0][-1])
+        else:
+            anim_root.align(sk[0])
+            anim_eff.align(sk[-1])
+        anim_upv.align(anim_root.anim)
         si.Translate(anim_upv.zero, 0, -data[1][0], 0, "siRelative", "siLocal")
         # save attributes
         self.input["anim"] = (anim_root.anim, anim_upv.anim, anim_eff.anim)
@@ -73,9 +78,13 @@ class IK(Base):
         args = (first_bone.FullName, self.input["anim"][1].FullName)
         si.ApplyOp("SkeletonUpVector", "{0};{1}".format(*args))
         # compare to define roll value
-        if not self.equal(first_bone.Kinematics.Global.Transform.Matrix4.Get2(), m4):
+        angle = 0
+        while not self.equal(first_bone.Kinematics.Global.Transform.Matrix4.Get2(), m4):
+            angle += 90
             first_bone.Properties(
-                "Kinematic Joint").Parameters("roll").Value = 180
+                "Kinematic Joint").Parameters("roll").Value = angle
+            if angle > 360:
+                break
         # stretching parameters
         if not self.helper.get("ss_factor"):
             if not self.helper.get("parameters"):

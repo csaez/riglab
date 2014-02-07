@@ -150,6 +150,11 @@ class Manipulator(SIWrapper):
             src = getattr(self, component)
             src.Kinematics.Global.Transform = dst.Kinematics.Global.Transform
 
+    def align_matrix4(self, m4, component="orient"):
+        if hasattr(self, component):
+            src = getattr(self, component)
+            utils.align_matrix4(src, m4)
+
     def neutral_pose(self):
         self.orient.Kinematics.Global.Transform = self.zero.Kinematics.Global.Transform = self.anim.Kinematics.Global.Transform
 

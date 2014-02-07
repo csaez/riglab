@@ -19,20 +19,23 @@ from wishlib.si import si, siget
 
 from .base import Base
 from ..manipulator import Manipulator
+from ..utils import curve_data
 
 
 class SplineIK(Base):
 
     def custom_anim(self):
         p0 = Manipulator.new(parent=self.input.get("root"))
+        p0.icon.shape = self.shape_color.get("ikIcon")
+        p0.icon.color = self.shape_color.get(self.side)[0]
         p0.owner = {"obj": self.obj, "class": self.classname}
         p1, p2, p3 = p0.duplicate(3)  # OPTIMIZATION
         for i, ctrl in enumerate((p0, p1, p2, p3)):
             ctrl.rename(self.name, i, side=self.side)
             if 0 < i < 3:
                 ctrl.icon.size = 0.25
-                continue
-            ctrl.icon.shape = "Rounded_Square"
+                ctrl.icon.shape = self.shape_color.get("upIcon")
+                ctrl.icon.color = self.shape_color.get(self.side)[1]
         p1.icon.connect = p0.anim
         p2.icon.connect = p3.anim
         # save anim components and cleanup
@@ -46,16 +49,13 @@ class SplineIK(Base):
         op.Parameters("points").Value = 1
         self.helper["bezier"] = op.Parent3DObject
         self.helper["bezier"].Name = self.nm.qn(
-            self.name, "bezierCurve", side=self.side)
+            self.name + "-bezier", "line", side=self.side)
         self.helper["root"].AddChild(self.helper["bezier"])
         self.helper["hidden"].append(self.helper.get("bezier"))
-        pts = self.helper["bezier"].ActivePrimitive.Geometry.Points
         # align anim controls
-        for i, pnt in enumerate(pts):
-            orient = self.input["anim"][i].Parent.Parent
-            tm = orient.Kinematics.Global.Transform
-            tm.SetTranslation(pnt.Position)
-            orient.Kinematics.Global.Transform = tm
+        data = curve_data(self.helper["curve"])
+        for i, manip in enumerate((p0, p1, p2, p3)):
+            manip.align_matrix4(data[0][i])
 
     def custom_build(self):
         super(SplineIK, self).custom_build()
@@ -66,8 +66,11 @@ class SplineIK(Base):
         # ice rig
         cmp_file = os.path.join(cmp_dir, "riglab__SplineIKSolver.xsicompound")
         self.helper["ICERig"] = self.helper.get("root").AddNull()
+        self.helper["ICERig"].Name = self.nm.qn(self.name + "-ICERig", "rig",
+                                                side=self.side)
+        self.helper["hidden"].append(self.helper["ICERig"])
         conn = ";".join([x.FullName for x in self.input["anim"]])
-        ICEOp = si.ApplyICEOp(cmp_file, self.helper["ICERig"], conn)
+        ICEOp = si.SIApplyICEOp(cmp_file, self.helper["ICERig"], conn)
         # set compound data
         compound = "{}.riglab__SplineIKSolver".format(ICEOp.FullName)
         curve_geo = self.helper["bezier"].ActivePrimitive.Geometry.Curves(0)
@@ -76,8 +79,8 @@ class SplineIK(Base):
         # apply transform
         cmp_file = os.path.join(cmp_dir, "riglab__ApplyTransform.xsicompound")
         for i, bone in enumerate(self.output["tm"]):
-            ICEOp = si.ApplyICEOp(cmp_file, bone,
-                                  self.helper["ICERig"].FullName)
+            ICEOp = si.SIApplyICEOp(cmp_file, bone,
+                                    self.helper["ICERig"].FullName)
             param = "{}.riglab__ApplyTransform.Index".format(ICEOp.FullName)
             siget(param).Value = i
 

@@ -15,7 +15,7 @@
 
 from .base import Base
 from ..manipulator import Manipulator
-from .. import utils
+from ..utils import curve_data
 
 
 class FK(Base):
@@ -36,13 +36,13 @@ class FK(Base):
             anim.extend(anim[0].duplicate(copies))
         # align
         if self.helper.get("curve"):
-            data = zip(*utils.curve_data(self.helper.get("curve")))
-            utils.align_matrix4(anim[0].orient, data[0][0])
+            data = zip(*curve_data(self.helper.get("curve")))
+            anim[0].align_matrix4(data[0][0])
             for i, (matrix, length) in enumerate(data[:-1]):
                 m = anim[i]
                 if i > 0:
                     m.parent = anim[i - 1].anim
-                utils.align_matrix4(m.orient, matrix)
+                m.align_matrix4(matrix)
                 m.icon.sclx = length
         else:  # align with the first bone
             anim[0].align(self.input["skeleton"][0])
