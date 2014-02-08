@@ -154,34 +154,16 @@ class Editor(QMainWindow):
         self.ui.autoName.setIcon(icon[int(self.autoname)])
 
     def renameitem_clicked(self, model_index):
-        # enabled just for groups
+        # TODO: add solver renaming
+        # works just for groups
         if not self.active_group:
             return
-        item = self.ui.stack.currentItem()
-        current_name = str(item.text(0))
-        split_name = current_name.split("_")
+        split_name = self.active_group.split("_")
         data = self.get_name(default_name=split_name[0],
                              default_side=split_name[1])
         if not data or not len(data.name):
             return
-        # define new group name
-        new_name = data.name + "_" + data.side
-        if current_name == new_name:
-            return
-        if item.parent() is None:  # group
-            self.active_rig.groups[
-                new_name] = self.active_rig.groups[current_name]
-            del self.active_rig.groups[current_name]
-        else:  # solver
-            grp_name = str(item.parent().text(0))
-            s = self.active_rig.get_solver(current_name)
-            # update states
-            for k, v in self.active_rig.groups[grp_name]["states"].iteritems():
-                if not v.get(s.id):
-                    continue
-                v[new_name] = v[s.id]
-            # rename
-            s.name = new_name
+        self.active_rig.rename_group(self.active_group, data.name, data.side)
         self.reload_stack()
 
     def newrig_clicked(self):
@@ -294,17 +276,14 @@ class Editor(QMainWindow):
         self.reload_stack()
 
     def removestate_clicked(self):
-        if self.active_group is None:
-            return
-        states = self.active_rig.groups[self.active_group]["states"]
-        if not len(states):
+        if not self.active_group or not len(self.active_rig.groups[self.active_group]["states"]):
             return
         n, ok = QtGui.QInputDialog.getItem(
-            self, "Remove State", "States:", states.keys(), 0, False)
-        if not ok:
-            return
-        del self.active_rig.groups[self.active_group]["states"][str(n)]
-        self.reload_stack()
+            self, "Remove State", "States:",
+            self.active_rig.groups[self.active_group]["states"].keys(), 0, False)
+        if ok:
+            self.active_rig.remove_group(self.active_group, str(n))
+            self.reload_stack()
 
     def autosnap_toggled(self, icon_only=False):
         if not icon_only:
@@ -313,10 +292,10 @@ class Editor(QMainWindow):
         icon = (QtGui.QIcon(), QtGui.QIcon(self.IMAGES.get("check")))
         self.ui.autoSnap.setIcon(icon[int(self.autosnap)])
 
-    def state_changed(self, name, group_name):
+    def state_changed(self, name, group_id):
         if self._mute:
             return
-        self.active_rig.apply_state(group_name, name, snap=self.autosnap)
+        self.active_rig.apply_state(group_id, name, snap=self.autosnap)
         self.reload_stack()
 
     def space_changed(self, manip, space_name):
@@ -503,21 +482,21 @@ class Editor(QMainWindow):
             view_state["current_item"] = str(curr_item.text(0))
         # redraw everything
         self.ui.stack.clear()
-        for group_name, v in self.active_rig.groups.iteritems():
+        for group_id, v in self.active_rig.groups.iteritems():
             # add groups
-            group = QtGui.QTreeWidgetItem((group_name, ))
-            # index = int(group_name == self.active_group)
+            group = QtGui.QTreeWidgetItem((group_id, ))
+            # index = int(group_id == self.active_group)
             group.setIcon(0, ICON("group"))
             self.ui.stack.addTopLevelItem(group)
             # add state combobox
-            states = self.active_rig.groups[group_name]["states"].keys()
+            states = self.active_rig.groups[group_id]["states"].keys()
             s = QtGui.QComboBox()
             s.addItems(states)
             QtCore.QObject.connect(
                 s, QtCore.SIGNAL("currentIndexChanged(QString)"),
-                lambda v, g=group_name: self.state_changed(str(v), g))
+                lambda v, g=group_id: self.state_changed(str(v), g))
             self.ui.stack.setItemWidget(group, 1, s)
-            active_state = self.active_rig.groups[group_name].get("active")
+            active_state = self.active_rig.groups[group_id].get("active")
             if active_state:
                 try:
                     s.setCurrentIndex(states.index(active_state))

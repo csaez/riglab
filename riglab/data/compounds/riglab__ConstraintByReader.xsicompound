@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsi_file type="CompoundNode" name="riglab__ConstraintByReader" author="csaez" formatversion="1.4" compoundversion="1.0" constructionmode="Current" backgroundcolor="10922155">
+	<definition>
+		<nodes>
+			<node type="SRTToMatrixNode" index="0">
+				<param name="scaling.scaling_x" type="4" value="1.000000"></param>
+				<param name="scaling.scaling_y" type="4" value="1.000000"></param>
+				<param name="scaling.scaling_z" type="4" value="1.000000"></param>
+				<param name="rotation.rotation_x" type="4" value="1.000000"></param>
+				<param name="rotation.rotation_y" type="4" value="0.000000"></param>
+				<param name="rotation.rotation_z" type="4" value="0.000000"></param>
+				<param name="rotation.rotation_angle" type="4" value="0.000000"></param>
+				<param name="translation.translation_x" type="4" value="0.000000"></param>
+				<param name="translation.translation_y" type="4" value="0.000000"></param>
+				<param name="translation.translation_z" type="4" value="0.000000"></param>
+				<portdef name="scaling" type="16" structure="1" group="0" instance="0" port="0"></portdef>
+				<portdef name="rotation" type="16384" structure="1" group="0" instance="0" port="1"></portdef>
+				<portdef name="translation" type="16" structure="1" group="0" instance="0" port="2"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">544</prop>
+					<prop name="posy">0</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="Add Constraints" version="1.0" index="1">
+				<param name="Constrainee_Reference" type="31" value="self"></param>
+				<param_ext name="Constrainee_Reference" type="31" value="self"></param_ext>
+				<portdef name="Constraint" type="4096" structure="1" group="2" instance="0" port="0" groupname="Constraint"></portdef>
+				<portdef name="Constrainee_In_Name" type="8192" structure="1" group="-1" instance="-1" port="-1"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">967</prop>
+					<prop name="posy">-8</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="EulerToRotationNode" index="2">
+				<param name="rotationorder" type="3" value="0"></param>
+				<param name="rotationxyz.rotationxyz_x" type="4" value="0.000000"></param>
+				<param name="rotationxyz.rotationxyz_y" type="4" value="0.000000"></param>
+				<param name="rotationxyz.rotationxyz_z" type="4" value="0.000000"></param>
+				<portdef name="rotationxyz" type="16" structure="1" group="0" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">345</prop>
+					<prop name="posy">21</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="[embedded_0]" index="3">
+				<param name="Reference" type="31" value=".ReaderValue"></param>
+				<param name="First.First_00" type="4" value="1.000000"></param>
+				<param name="First.First_01" type="4" value="0.000000"></param>
+				<param name="First.First_02" type="4" value="0.000000"></param>
+				<param name="First.First_03" type="4" value="0.000000"></param>
+				<param name="First.First_10" type="4" value="0.000000"></param>
+				<param name="First.First_11" type="4" value="1.000000"></param>
+				<param name="First.First_12" type="4" value="0.000000"></param>
+				<param name="First.First_13" type="4" value="0.000000"></param>
+				<param name="First.First_20" type="4" value="0.000000"></param>
+				<param name="First.First_21" type="4" value="0.000000"></param>
+				<param name="First.First_22" type="4" value="1.000000"></param>
+				<param name="First.First_23" type="4" value="0.000000"></param>
+				<param name="First.First_30" type="4" value="0.000000"></param>
+				<param name="First.First_31" type="4" value="0.000000"></param>
+				<param name="First.First_32" type="4" value="0.000000"></param>
+				<param name="First.First_33" type="4" value="1.000000"></param>
+				<param name="Second.Second_00" type="4" value="1.000000"></param>
+				<param name="Second.Second_01" type="4" value="0.000000"></param>
+				<param name="Second.Second_02" type="4" value="0.000000"></param>
+				<param name="Second.Second_03" type="4" value="0.000000"></param>
+				<param name="Second.Second_10" type="4" value="0.000000"></param>
+				<param name="Second.Second_11" type="4" value="1.000000"></param>
+				<param name="Second.Second_12" type="4" value="0.000000"></param>
+				<param name="Second.Second_13" type="4" value="0.000000"></param>
+				<param name="Second.Second_20" type="4" value="0.000000"></param>
+				<param name="Second.Second_21" type="4" value="0.000000"></param>
+				<param name="Second.Second_22" type="4" value="1.000000"></param>
+				<param name="Second.Second_23" type="4" value="0.000000"></param>
+				<param name="Second.Second_30" type="4" value="0.000000"></param>
+				<param name="Second.Second_31" type="4" value="0.000000"></param>
+				<param name="Second.Second_32" type="4" value="0.000000"></param>
+				<param name="Second.Second_33" type="4" value="1.000000"></param>
+				<param_ext name="Reference" type="31" value=".ReaderValue"></param_ext>
+				<portdef name="First" type="256" structure="1" group="-1" instance="-1" port="-1"></portdef>
+				<portdef name="Second" type="256" structure="1" group="-1" instance="-1" port="-1"></portdef>
+				<portdef name="Reader" type="8192" structure="1" group="-1" instance="-1" port="-1"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">760</prop>
+					<prop name="posy">-6</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="SRTToMatrixNode" index="4">
+				<param name="scaling.scaling_x" type="4" value="1.000000"></param>
+				<param name="scaling.scaling_y" type="4" value="1.000000"></param>
+				<param name="scaling.scaling_z" type="4" value="1.000000"></param>
+				<param name="rotation.rotation_x" type="4" value="1.000000"></param>
+				<param name="rotation.rotation_y" type="4" value="0.000000"></param>
+				<param name="rotation.rotation_z" type="4" value="0.000000"></param>
+				<param name="rotation.rotation_angle" type="4" value="0.000000"></param>
+				<param name="translation.translation_x" type="4" value="0.000000"></param>
+				<param name="translation.translation_y" type="4" value="0.000000"></param>
+				<param name="translation.translation_z" type="4" value="0.000000"></param>
+				<portdef name="scaling" type="16" structure="1" group="0" instance="0" port="0"></portdef>
+				<portdef name="rotation" type="16384" structure="1" group="0" instance="0" port="1"></portdef>
+				<portdef name="translation" type="16" structure="1" group="0" instance="0" port="2"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">542</prop>
+					<prop name="posy">-102</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="EulerToRotationNode" index="5">
+				<param name="rotationorder" type="3" value="0"></param>
+				<param name="rotationxyz.rotationxyz_x" type="4" value="0.000000"></param>
+				<param name="rotationxyz.rotationxyz_y" type="4" value="0.000000"></param>
+				<param name="rotationxyz.rotationxyz_z" type="4" value="0.000000"></param>
+				<portdef name="rotationxyz" type="16" structure="1" group="0" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">347</prop>
+					<prop name="posy">-94</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="IfNode" index="6">
+				<param name="condition" type="11" value="false"></param>
+				<portdef name="condition" type="1" structure="1" group="0" instance="0" port="0"></portdef>
+				<portdef name="iftrue" type="4096" structure="1" group="0" instance="0" port="1"></portdef>
+				<portdef name="iffalse" type="4096" structure="1" group="0" instance="0" port="2"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">1137</prop>
+					<prop name="posy">-25</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+		</nodes>
+		<exposed_ports>
+			<port index="0" portname="scaling" username="Second_Scaling" basename="Second Scaling" portlabel="Second Scaling" exposetype="single"> </port>
+			<port index="0" portname="translation" username="Second_Translation" basename="Second Translation" portlabel="Second Translation" exposetype="single"> </port>
+			<port index="2" portname="rotationxyz" username="Second_Rotation" basename="Second Rotation" portlabel="Second Rotation" exposetype="single"> </port>
+			<port index="3" portname="Reader" username="Reader" basename="Reader" portlabel="Reader" exposetype="single"> </port>
+			<port index="3" portname="Reference" username="Reference" basename="Reference" portlabel="Reference" exposetype="single"> </port>
+			<port index="4" portname="scaling" username="First_Scaling" basename="First_Scaling" portlabel="First_Scaling" exposetype="single"> </port>
+			<port index="4" portname="translation" username="First_Translation" basename="First Translation" portlabel="First Translation" exposetype="single"> </port>
+			<port index="5" portname="rotationxyz" username="First_Rotation" basename="First Rotation" portlabel="First Rotation" exposetype="single"> </port>
+			<port index="6" portname="result" username="Execute" basename="Execute" portlabel="Execute" exposetype="single"> </port>
+			<port index="6" portname="condition" username="Mute" basename="Mute" portlabel="Mute" exposetype="single"> </port>
+		</exposed_ports>
+		<connections>
+			<cnx from_node="3" from_port="Execute" to_node="1" to_port="Constraint"> </cnx>
+			<cnx from_node="5" from_port="rotation" to_node="4" to_port="rotation"> </cnx>
+			<cnx from_node="2" from_port="rotation" to_node="0" to_port="rotation"> </cnx>
+			<cnx from_node="4" from_port="matrix" to_node="3" to_port="First"> </cnx>
+			<cnx from_node="0" from_port="matrix" to_node="3" to_port="Second"> </cnx>
+			<cnx from_node="1" from_port="Execute" to_node="6" to_port="iffalse"> </cnx>
+		</connections>
+		<layout>
+			<item type="input" name="Mute"> </item>
+			<group type="input" name="First">
+				<item type="input" name="First_Scaling"> </item>
+				<item type="input" name="First_Rotation"> </item>
+				<item type="input" name="First_Translation"> </item>
+			</group>
+			<group type="input" name="Second">
+				<item type="input" name="Second_Scaling"> </item>
+				<item type="input" name="Second_Rotation"> </item>
+				<item type="input" name="Second_Translation"> </item>
+			</group>
+			<item type="input" name="Reader"> </item>
+			<item type="input" name="Reference"> </item>
+			<item type="output" name="Execute"> </item>
+		</layout>
+		<blob_dictionary>
+		</blob_dictionary>
+	</definition>
+	<embedded_0 name="Constraint By Reader" tasks="Kinematics" formatversion="1.4" compoundversion="1.0" constructionmode="Current" backgroundcolor="6732954">
+		<nodes>
+			<node type="Set Data" version="1.0" index="0">
+				<param name="Reference" type="31" value="self.__TmpConstraintPose"></param>
+				<param name="Value.Value_00" type="4" value="1.000000"></param>
+				<param name="Value.Value_01" type="4" value="0.000000"></param>
+				<param name="Value.Value_02" type="4" value="0.000000"></param>
+				<param name="Value.Value_03" type="4" value="0.000000"></param>
+				<param name="Value.Value_10" type="4" value="0.000000"></param>
+				<param name="Value.Value_11" type="4" value="1.000000"></param>
+				<param name="Value.Value_12" type="4" value="0.000000"></param>
+				<param name="Value.Value_13" type="4" value="0.000000"></param>
+				<param name="Value.Value_20" type="4" value="0.000000"></param>
+				<param name="Value.Value_21" type="4" value="0.000000"></param>
+				<param name="Value.Value_22" type="4" value="1.000000"></param>
+				<param name="Value.Value_23" type="4" value="0.000000"></param>
+				<param name="Value.Value_30" type="4" value="0.000000"></param>
+				<param name="Value.Value_31" type="4" value="0.000000"></param>
+				<param name="Value.Value_32" type="4" value="0.000000"></param>
+				<param name="Value.Value_33" type="4" value="1.000000"></param>
+				<param_ext name="Reference" type="31" value="self.__TmpConstraintPose"></param_ext>
+				<portdef name="In_Name" type="8192" structure="1" group="-1" instance="-1" port="-1"></portdef>
+				<portdef name="Value" type="256" structure="1" group="2" instance="0" port="0" groupname="Value"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">747</prop>
+					<prop name="posy">43</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="1">
+				<param name="reference" type="31" value=".ReaderValue"></param>
+				<param_ext name="reference" type="31" value=".ReaderValue"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">175</prop>
+					<prop name="posy">29</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="LinearInterpolateNode" index="2">
+				<param name="first.first_00" type="4" value="1.000000"></param>
+				<param name="first.first_01" type="4" value="0.000000"></param>
+				<param name="first.first_02" type="4" value="0.000000"></param>
+				<param name="first.first_03" type="4" value="0.000000"></param>
+				<param name="first.first_10" type="4" value="0.000000"></param>
+				<param name="first.first_11" type="4" value="1.000000"></param>
+				<param name="first.first_12" type="4" value="0.000000"></param>
+				<param name="first.first_13" type="4" value="0.000000"></param>
+				<param name="first.first_20" type="4" value="0.000000"></param>
+				<param name="first.first_21" type="4" value="0.000000"></param>
+				<param name="first.first_22" type="4" value="1.000000"></param>
+				<param name="first.first_23" type="4" value="0.000000"></param>
+				<param name="first.first_30" type="4" value="0.000000"></param>
+				<param name="first.first_31" type="4" value="0.000000"></param>
+				<param name="first.first_32" type="4" value="0.000000"></param>
+				<param name="first.first_33" type="4" value="1.000000"></param>
+				<param name="second.second_00" type="4" value="1.000000"></param>
+				<param name="second.second_01" type="4" value="0.000000"></param>
+				<param name="second.second_02" type="4" value="0.000000"></param>
+				<param name="second.second_03" type="4" value="0.000000"></param>
+				<param name="second.second_10" type="4" value="0.000000"></param>
+				<param name="second.second_11" type="4" value="1.000000"></param>
+				<param name="second.second_12" type="4" value="0.000000"></param>
+				<param name="second.second_13" type="4" value="0.000000"></param>
+				<param name="second.second_20" type="4" value="0.000000"></param>
+				<param name="second.second_21" type="4" value="0.000000"></param>
+				<param name="second.second_22" type="4" value="1.000000"></param>
+				<param name="second.second_23" type="4" value="0.000000"></param>
+				<param name="second.second_30" type="4" value="0.000000"></param>
+				<param name="second.second_31" type="4" value="0.000000"></param>
+				<param name="second.second_32" type="4" value="0.000000"></param>
+				<param name="second.second_33" type="4" value="1.000000"></param>
+				<param name="blend" type="4" value="0.000000"></param>
+				<param name="clamp" type="11" value="true"></param>
+				<portdef name="first" type="256" structure="1" group="0" instance="0" port="0"></portdef>
+				<portdef name="second" type="256" structure="1" group="0" instance="0" port="1"></portdef>
+				<portdef name="blend" type="4" structure="1" group="0" instance="0" port="2"></portdef>
+				<portdef name="clamp" type="1" structure="1" group="0" instance="0" port="3"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">368</prop>
+					<prop name="posy">30</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="MultiplyNode" index="3">
+				<param name="value1.value1_00" type="4" value="1.000000"></param>
+				<param name="value1.value1_01" type="4" value="0.000000"></param>
+				<param name="value1.value1_02" type="4" value="0.000000"></param>
+				<param name="value1.value1_03" type="4" value="0.000000"></param>
+				<param name="value1.value1_10" type="4" value="0.000000"></param>
+				<param name="value1.value1_11" type="4" value="1.000000"></param>
+				<param name="value1.value1_12" type="4" value="0.000000"></param>
+				<param name="value1.value1_13" type="4" value="0.000000"></param>
+				<param name="value1.value1_20" type="4" value="0.000000"></param>
+				<param name="value1.value1_21" type="4" value="0.000000"></param>
+				<param name="value1.value1_22" type="4" value="1.000000"></param>
+				<param name="value1.value1_23" type="4" value="0.000000"></param>
+				<param name="value1.value1_30" type="4" value="0.000000"></param>
+				<param name="value1.value1_31" type="4" value="0.000000"></param>
+				<param name="value1.value1_32" type="4" value="0.000000"></param>
+				<param name="value1.value1_33" type="4" value="1.000000"></param>
+				<param name="value2.value2_00" type="4" value="1.000000"></param>
+				<param name="value2.value2_01" type="4" value="0.000000"></param>
+				<param name="value2.value2_02" type="4" value="0.000000"></param>
+				<param name="value2.value2_03" type="4" value="0.000000"></param>
+				<param name="value2.value2_10" type="4" value="0.000000"></param>
+				<param name="value2.value2_11" type="4" value="1.000000"></param>
+				<param name="value2.value2_12" type="4" value="0.000000"></param>
+				<param name="value2.value2_13" type="4" value="0.000000"></param>
+				<param name="value2.value2_20" type="4" value="0.000000"></param>
+				<param name="value2.value2_21" type="4" value="0.000000"></param>
+				<param name="value2.value2_22" type="4" value="1.000000"></param>
+				<param name="value2.value2_23" type="4" value="0.000000"></param>
+				<param name="value2.value2_30" type="4" value="0.000000"></param>
+				<param name="value2.value2_31" type="4" value="0.000000"></param>
+				<param name="value2.value2_32" type="4" value="0.000000"></param>
+				<param name="value2.value2_33" type="4" value="1.000000"></param>
+				<portdef name="value1" type="256" structure="1" group="0" instance="0" port="0"></portdef>
+				<portdef name="value2" type="256" structure="1" group="0" instance="1" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">592</prop>
+					<prop name="posy">40</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="4">
+				<param name="reference" type="31" value="kine.global"></param>
+				<param_ext name="reference" type="31" value="kine.global"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">388</prop>
+					<prop name="posy">173</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="5">
+				<param name="reference" type="31" value="this_parent"></param>
+				<param_ext name="reference" type="31" value="this_parent"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">221</prop>
+					<prop name="posy">186</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+		</nodes>
+		<exposed_ports>
+			<port index="0" portname="Execute" username="Execute" basename="Execute" portlabel="Execute" exposetype="single"> </port>
+			<port index="1" portname="inname" username="Reader" basename="Reader" portlabel="Reader" exposetype="single"> </port>
+			<port index="1" portname="reference" username="Reference" basename="Reference" portlabel="Reference" exposetype="single"> </port>
+			<port index="2" portname="first" username="First" basename="First" portlabel="First" exposetype="single"> </port>
+			<port index="2" portname="second" username="Second" basename="Second" portlabel="Second" exposetype="single"> </port>
+		</exposed_ports>
+		<connections>
+			<cnx from_node="2" from_port="result" to_node="3" to_port="value1"> </cnx>
+			<cnx from_node="3" from_port="result" to_node="0" to_port="Value"> </cnx>
+			<cnx from_node="1" from_port="value" to_node="2" to_port="blend"> </cnx>
+			<cnx from_node="4" from_port="value" to_node="3" to_port="value2"> </cnx>
+			<cnx from_node="5" from_port="outname" to_node="4" to_port="inname"> </cnx>
+		</connections>
+		<layout>
+			<item type="input" name="First"> </item>
+			<item type="input" name="Second"> </item>
+			<item type="input" name="Reader"> </item>
+			<item type="input" name="Reference"> </item>
+			<item type="output" name="Execute"> </item>
+		</layout>
+	</embedded_0>
+</xsi_file>

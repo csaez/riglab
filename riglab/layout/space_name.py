@@ -34,7 +34,7 @@ class SpaceName(QtGui.QDialog):
 
     @classmethod
     def get_data(cls, parent=None, space_name=None, space_type="parent"):
-        types = ("Parent", "Orient")
+        types = ("Parent", "Orient", "Pose")
         # validate
         if space_type.capitalize() not in types:
             return

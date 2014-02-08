@@ -46,7 +46,7 @@ class ConeReader(PoseReader):
     def new(cls, target=None):
         obj = si.SIGetPrim("PointCloud")("Value")  # create an empty pcloud
         obj.Name = "poseReader"
-        si.ApplyICEOp(os.path.join(COMPOUND_DIR, cls.COMPOUND_FILE), obj, " ")
+        si.SIApplyICEOp(os.path.join(COMPOUND_DIR, cls.COMPOUND_FILE), obj, " ")
         reader = cls(obj)
         if target:
             reader.target = target

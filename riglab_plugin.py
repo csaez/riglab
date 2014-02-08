@@ -24,6 +24,7 @@ def XSILoadPlugin(in_reg):
     in_reg.UserData = ""
     in_reg.RegisterCommand("QuickLab", "quicklab")
     in_reg.RegisterCommand("RigLab Editor", "riglab")
+    in_reg.RegisterCommand("Create Pose Reader", "reader")
     in_reg.RegisterCommand("Curve To Nulls", "curve2null")
     in_reg.RegisterCommand("Nulls To Curve", "null2curve")
     in_reg.RegisterCommand("Align Nulls To Curve", "align2curve")
@@ -54,6 +55,17 @@ def RigLabEditor_Execute():
     log("RigLabEditor_Execute called", C.siVerbose)
     from riglab.layout.editor import Editor
     show_qt(Editor)
+    return True
+
+
+def CreatePoseReader_Execute():
+    log("CreatePoseReader_Execute called", C.siVerbose)
+    from riglab.psd.reader import ConeReader
+    sel = list(sisel)
+    r = ConeReader.new()
+    if len(sel):
+        r.obj.Kinematics.Global.Transform = sel[0].Kinematics.Global.Transform
+        r.target = sel[0]
     return True
 
 

@@ -28,7 +28,7 @@ class Manipulator(SIWrapper):
     PROP_NAME = "Manipulator_Data"
 
     def __init__(self, obj):
-        self.spaces = {"parent": dict(), "orient": dict()}
+        self.spaces = {"parent": dict(), "orient": dict(), "pose": dict()}
         self._offsets = dict()
         self._visibility = True
         self.owner = {"obj": None, "class": None}
@@ -61,7 +61,7 @@ class Manipulator(SIWrapper):
         return manipulator
 
     def list_spaces(self):
-        return [x for s in ("parent", "orient") for x in self.spaces[s].keys()]
+        return [x for s in self.spaces.keys() for x in self.spaces[s].keys()]
 
     def reset_spaces(self):
         for space_type, space_data in self.spaces.iteritems():
@@ -74,7 +74,7 @@ class Manipulator(SIWrapper):
         self.zero.Kinematics.Local.Transform = simath.CreateTransform()
 
     def add_space(self, name=None, target=None, space_type="parent"):
-        if not target or space_type.lower() not in ("parent", "orient"):
+        if not target or space_type.lower() not in self.spaces.keys():
             return
         # validate name
         name = name or target.Name
@@ -82,20 +82,36 @@ class Manipulator(SIWrapper):
             return
         # add cns
         tm = self.zero.Kinematics.Global.Transform
-        if space_type == "parent":
-            cns = self.space.Kinematics.AddConstraint("Pose", target, True)
-        else:
-            cns = self.orient.Kinematics.AddConstraint("Pose", target, True)
-            cns.Parameters("cnspos").Value = False
-            cns.Parameters("cnsscl").Value = False
+        cns = {"parent": self._parent, "orient":
+               self._orient, "pose": self._pose}.get(space_type)(target)
         self.spaces[space_type.lower()][name] = cns
         # save offset
-        self._offsets[name] = {p + a: cns.Parameters(p + a).Value
-                               for p in ("scl", "rot", "pos") for a in "xyz"}
+        if space_type is not "pose":
+            self._offsets[name] = {p + a: cns.Parameters(p + a).Value
+                                   for p in ("scl", "rot", "pos") for a in "xyz"}
         # restore transforms
         self.zero.Kinematics.Global.Transform = tm
         self.active_space = name
         self.update()  # update metadata
+
+    def _parent(self, target):
+        cns = self.space.Kinematics.AddConstraint("Pose", target, True)
+        return cns
+
+    def _orient(self, target):
+        cns = self.orient.Kinematics.AddConstraint("Pose", target, True)
+        cns.Parameters("cnspos").Value = False
+        cns.Parameters("cnsscl").Value = False
+        return cns
+
+    def _pose(self, target):
+        cmp_name = "riglab__ConstraintByReader"
+        cmp_file = os.path.join(self.DATA_DIR, "compounds",
+                                cmp_name + ".xsicompound")
+        op = si.SIApplyICEOp(cmp_file, self.orient)
+        cmp = siget(op.FullName + "." + cmp_name)
+        cmp.Parameters("Reference").Value = target.FullName + ".ReaderValue"
+        return cmp
 
     def remove_space(self, name):
         for space_type, data in self.spaces.iteritems():

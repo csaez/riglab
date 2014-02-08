@@ -66,6 +66,8 @@ class Rig(SIWrapper):
         self._mute = False
         self.name = self.obj.Name
 
+    # GROUPS
+
     def add_group(self, name):
         self.groups[name] = {"solvers": list(),
                              "states": dict(),
@@ -81,46 +83,67 @@ class Rig(SIWrapper):
         del self.groups[name]
         self.update()
 
-    def get_skeleton(self, group_name=None):
+    def rename_group(self, group_id, name, side="C"):
+        new_id = name + "_" + side
+        if group_id == new_id:
+            return
+        self.groups[new_id] = self.groups[group_id]
+        del self.groups[group_id]
+
+    # GETTERS
+
+    def get_manipulator(self, name):
+        if not hasattr(cache, "manip"):
+            cache.manip = dict()
+        name = self.obj.name + "." + name
+        m = cache.manip.get(name)
+        if not m:
+            m = Manipulator(siget(name))
+            cache.manip[name] = m
+        return m
+
+    def get_skeleton(self, group_id=None):
         # get rig's skeleton
-        if not group_name:
+        if not group_id:
             result = list()
             for gn in self.groups.keys():
                 result.extend(self.get_skeleton(gn))
             return result
         # get by group
-        if not self.groups.get(group_name):
+        if not self.groups.get(group_id):
             return []
         skel = self._collect_from_solvers(
-            group_name, lambda x: x.input["skeleton"])
+            group_id, lambda x: x.input["skeleton"])
         skel = set([x.FullName for x in skel])  # remove duplicates
         return [siget(x) for x in skel]
 
-    def get_anim(self, group_name=None):
+    def get_anim(self, group_id=None):
         # get rig's anim
-        if not group_name:
+        if not group_id:
             result = list()
             for gn in self.groups.keys():
                 result.extend(self.get_anim(gn))
             return result
         # get by group
-        if not self.groups.get(group_name):
+        if not self.groups.get(group_id):
             return []
         anim = self._collect_from_solvers(
-            group_name, lambda x: x.input["anim"])
+            group_id, lambda x: x.input["anim"])
         anim = set([x.FullName for x in anim])  # remove duplicates
         return [siget(x) for x in anim]
 
-    def _collect_from_solvers(self, group_name, query_function):
+    def _collect_from_solvers(self, group_id, query_function):
         """Utility function used to collect solver data in a group"""
         data = list()
-        for solver_id in self.groups[group_name]["solvers"]:
+        for solver_id in self.groups[group_id]["solvers"]:
             solver = self.get_solver(solver_id)
             data.extend(query_function(solver))
         return data
 
-    def add_solver(self, solver_type, group_name, skeleton=None, name=None, side="C", negate=False):
-        if self.groups.get(group_name) is None or not hasattr(solvers, solver_type) or not sisel.Count:
+    # SOLVERS
+
+    def add_solver(self, solver_type, group_id, skeleton=None, name=None, side="C", negate=False):
+        if self.groups.get(group_id) is None or not hasattr(solvers, solver_type) or not sisel.Count:
             return
         # save selection
         skeleton = skeleton or list(sisel)
@@ -144,7 +167,7 @@ class Rig(SIWrapper):
                                   side=side, negate=negate)
         self.solvers[solver.id] = solver.obj  # save solver root
         # groups
-        self.groups[group_name]["solvers"].append(solver.id)
+        self.groups[group_id]["solvers"].append(solver.id)
         self.update()
         # restore stack states
         for i, x in enumerate(solver_stack):
@@ -186,8 +209,8 @@ class Rig(SIWrapper):
                     cache.solver[name] = s
         return s
 
-    def get_solvers(self, group_name=None):
-        if group_name and self.groups.get(group_name):
+    def get_solvers(self, group_id=None):
+        if group_id and self.groups.get(group_id):
             return [self.get_solver(x) for x in self.groups.get("leg_L").get("solvers")]
         return [self.get_solver(x) for x in self.solvers.keys()]
 
@@ -209,8 +232,10 @@ class Rig(SIWrapper):
             result.append(self.get_solver(solver_id))
         return result
 
-    def save_state(self, group_name, name):
-        grp = self.groups.get(group_name)
+    # STATES
+
+    def save_state(self, group_id, name):
+        grp = self.groups.get(group_id)
         if grp is None:
             return
         data = {}
@@ -220,8 +245,14 @@ class Rig(SIWrapper):
         grp["states"][name] = data
         self.update()
 
-    def apply_state(self, group_name, name, snap=False):
-        grp = self.groups.get(group_name)
+    def remove_state(self, group_id, name):
+        grp = self.groups.get(group_id)
+        if not grp or name not in grp["states"].keys():
+            return
+        del self.groups[group_id]["states"][name]
+
+    def apply_state(self, group_id, name, snap=False):
+        grp = self.groups.get(group_id)
         if not grp or not grp["states"].get(name):
             return
         # get solvers
@@ -267,6 +298,8 @@ class Rig(SIWrapper):
                 si.SaveKeyOnKeyable(solver.input.get("anim"))
                 si.SaveKey(param, current_frame)
                 si.SaveKey(param, current_frame - 1, old_state[i])
+
+    # TEMPLATES
 
     def get_template(self, group_id):
         # mapping table
@@ -322,7 +355,7 @@ class Rig(SIWrapper):
         return {"mapping": mapping, "data": data,
                 "filetype": "riglab:group_template", "version": "1.0"}
 
-    def apply_template(self, group_id, template, invert=False, icon=True, negate=False):
+    def apply_template(self, group_id, template, icon=True, negate=False):
         # validate
         if not self.groups.get(group_id):
             print "WARNING: invalid group_id."
@@ -379,6 +412,8 @@ class Rig(SIWrapper):
                 self.get_solver(table[solver_id]).state = value
             self.save_state(group_id, name)
         self.apply_state(group_id, template["mapping"]["active_state"])
+
+    # ATTRIBUTES
 
     @property
     def mode(self):
@@ -438,6 +473,16 @@ class Rig(SIWrapper):
             if x.Parent.Name not in names:
                 in_parent.AddChild(x)
 
+    # UTILS
+
+    def unique_name(self, in_name, in_side, n=0):
+        with self.nm.override(rule="3dobject"):
+            temp_name = in_name + str(n).zfill(2)
+            while self.obj.FindChildren2(self.nm.qn(temp_name + "Root", "group", side=in_side)).Count:
+                n += 1
+                temp_name = in_name + str(n).zfill(2)
+        return temp_name
+
     def save_pose(self, mode=None):
         if mode is None:
             mode = self._mode
@@ -463,21 +508,3 @@ class Rig(SIWrapper):
                 continue
             tm.SetMatrix4(simath.CreateMatrix4(m4))
             x.Kinematics.Global.Transform = tm
-
-    def unique_name(self, in_name, in_side, n=0):
-        with self.nm.override(rule="3dobject"):
-            temp_name = in_name + str(n).zfill(2)
-            while self.obj.FindChildren2(self.nm.qn(temp_name + "Root", "group", side=in_side)).Count:
-                n += 1
-                temp_name = in_name + str(n).zfill(2)
-        return temp_name
-
-    def get_manipulator(self, name):
-        if not hasattr(cache, "manip"):
-            cache.manip = dict()
-        name = self.obj.name + "." + name
-        m = cache.manip.get(name)
-        if not m:
-            m = Manipulator(siget(name))
-            cache.manip[name] = m
-        return m
