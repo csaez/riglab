@@ -17,18 +17,20 @@ import os
 
 import naming
 from rigicon.icon import Icon
-from wishlib.si import si, siget, simath, SIWrapper
+from wishlib.si import si, siget, simath, SIWrapper, sianchor
 
 from . import utils
+from .layout.pose_space import PoseSpace
 
 
 class Manipulator(SIWrapper):
     nm = naming.Manager()
     DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
     PROP_NAME = "Manipulator_Data"
+    SPACE_TYPES = ("reader", "orient", "parent")
 
     def __init__(self, obj):
-        self.spaces = {"parent": dict(), "orient": dict(), "pose": dict()}
+        self.spaces = {x: dict() for x in self.SPACE_TYPES}
         self._offsets = dict()
         self._visibility = True
         self.owner = {"obj": None, "class": None}
@@ -46,6 +48,9 @@ class Manipulator(SIWrapper):
         self.zero = self.anim.Parent
         self.orient = self.zero.Parent
         self.space = self.orient.Parent
+        for x in self.SPACE_TYPES:
+            if not self.spaces.get(x):
+                self.spaces[x] = dict()
 
     @classmethod
     def new(cls, parent=None):
@@ -61,7 +66,7 @@ class Manipulator(SIWrapper):
         return manipulator
 
     def list_spaces(self):
-        return [x for s in self.spaces.keys() for x in self.spaces[s].keys()]
+        return [x for s in self.SPACE_TYPES for x in self.spaces[s].keys()]
 
     def reset_spaces(self):
         for space_type, space_data in self.spaces.iteritems():
@@ -74,8 +79,10 @@ class Manipulator(SIWrapper):
         self.zero.Kinematics.Local.Transform = simath.CreateTransform()
 
     def add_space(self, name=None, target=None, space_type="parent"):
-        if not target or space_type.lower() not in self.spaces.keys():
+        space_type = space_type.lower()
+        if not target or space_type not in self.SPACE_TYPES:
             return
+        print "ready!"
         # validate name
         name = name or target.Name
         if name in self.list_spaces():
@@ -83,10 +90,10 @@ class Manipulator(SIWrapper):
         # add cns
         tm = self.zero.Kinematics.Global.Transform
         cns = {"parent": self._parent, "orient":
-               self._orient, "pose": self._pose}.get(space_type)(target)
-        self.spaces[space_type.lower()][name] = cns
+               self._orient, "reader": self._pose}.get(space_type)(target)
+        self.spaces[space_type][name] = cns
         # save offset
-        if space_type is not "pose":
+        if space_type != "reader":
             self._offsets[name] = {p + a: cns.Parameters(p + a).Value
                                    for p in ("scl", "rot", "pos") for a in "xyz"}
         # restore transforms
@@ -108,9 +115,17 @@ class Manipulator(SIWrapper):
         cmp_name = "riglab__ConstraintByReader"
         cmp_file = os.path.join(self.DATA_DIR, "compounds",
                                 cmp_name + ".xsicompound")
-        op = si.SIApplyICEOp(cmp_file, self.orient)
+        op = si.SIApplyICEOp(cmp_file, self.orient, target.FullName)
         cmp = siget(op.FullName + "." + cmp_name)
-        cmp.Parameters("Reference").Value = target.FullName + ".ReaderValue"
+        base_name = str(cmp.FullName) + "."
+        mapping = {"scl": "Scaling_", "rot":
+                   "Rotation_", "pos": "Translation_"}
+        for x in ("First_", "Second_"):
+            for k, v in mapping.iteritems():
+                for a in "xyz":
+                    val = self.anim.Kinematics.Global.Parameters(k + a).Value
+                    siget(base_name + x + v + a).Value = val
+        siget(base_name + "active").Value = True
         return cmp
 
     def remove_space(self, name):
@@ -122,13 +137,23 @@ class Manipulator(SIWrapper):
             del self.spaces[space_type][name]
             self.update()
 
+    def inspect_space(self, space_name):
+        for space_type, data in self.spaces.iteritems():
+            if not data.get(space_name):
+                continue
+            space = data.get(space_name)
+            if space_type == "reader":
+                PoseSpace(space, self, parent=sianchor()).show()
+            else:
+                si.InspectObj(space)
+
     @property
     def active_space(self):
         # it has to be live because of animation
         _active_space = "default"
-        for x in ("parent", "orient"):
+        for x in self.SPACE_TYPES:
             for name, cns in self.spaces[x].iteritems():
-                if cns.Parameters("active").Value:
+                if siget(cns.FullName + ".active").Value:
                     _active_space = name
         return _active_space
 
@@ -143,7 +168,7 @@ class Manipulator(SIWrapper):
         tm = self.zero.Kinematics.Global.Transform
         for space_type, data in spaces.iteritems():
             for k, cns in data.iteritems():
-                cns.Parameters("active").Value = name == k
+                siget(cns.FullName + ".active").Value = name == k
         self.zero.Kinematics.Global.Transform = tm
 
     def rename(self, *args, **kwds):

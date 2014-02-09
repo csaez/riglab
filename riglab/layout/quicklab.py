@@ -79,8 +79,7 @@ class QuickLab(QMenu):
         if not self.rig:
             return
         # spaces
-        self.spaces = [n for t in ("orient", "parent")
-                       for n in self.manip.spaces[t].keys()]
+        self.spaces = self.manip.list_spaces()
         self.active_space = self.manip.active_space
         # states
         d = self.manip.owner
@@ -108,6 +107,8 @@ class QuickLab(QMenu):
             if len_sp > 1:
                 s.addAction("Reset").triggered.connect(
                     lambda x: self.manip.reset_spaces())
+            s.addAction("Inspect...").triggered.connect(
+                lambda x: self.inspect_spaces())
         # states
         for x in self.states:
             a = self.addAction(x)
@@ -133,3 +134,9 @@ class QuickLab(QMenu):
                                      self.spaces, 0, False)
         if ok:
             self.manip.remove_space(str(n))
+
+    def inspect_spaces(self):
+        n, ok = QInputDialog.getItem(self, "Inspect Space", "Spaces:",
+                                     self.spaces, 0, False)
+        if ok:
+            self.manip.inspect_space(str(n))
