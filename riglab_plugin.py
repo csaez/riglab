@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from wishlab.qt import QtGui
 from wishlib.si import si, sisel, log, C, show_qt
 
 
@@ -43,9 +44,8 @@ def QuickLab_Execute():
     log("QuickLab_Execute called", C.siVerbose)
     if sisel.Count != 1:
         return False
-    from PyQt4.QtGui import QCursor
     from riglab.layout.quicklab import QuickLab
-    pos = QCursor.pos()
+    pos = QtGui.QCursor.pos()
     show_qt(QuickLab, modal=True,
             onshow_event=lambda x: x.move(pos.x(), pos.y()))
     return True

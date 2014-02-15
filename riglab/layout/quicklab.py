@@ -16,9 +16,7 @@
 import os
 
 from wishlib.si import si, sisel
-from wishlib.qt.QtGui import QMenu
-
-from PyQt4.QtGui import QInputDialog, QIcon
+from wishlib.qt import QtGui, widgets
 
 from .space_name import SpaceName
 from ..manipulator import Manipulator
@@ -60,7 +58,7 @@ def get_solver(obj, solver_class):
     return s
 
 
-class QuickLab(QMenu):
+class QuickLab(widgets.QMenu):
     IMAGES = {"check": "iconmonstr-check-mark-icon-256.png", }
     for k, v in IMAGES.iteritems():
         IMAGES[k] = os.path.join(os.path.dirname(__file__), "ui", "images", v)
@@ -91,7 +89,7 @@ class QuickLab(QMenu):
                 self.active_state = self.rig.groups[k]["active"]
 
     def setup_ui(self):
-        icon = (QIcon(), QIcon(self.IMAGES.get("check")))
+        icon = (QtGui.QIcon(), QtGui.QIcon(self.IMAGES.get("check")))
         # space switching
         s = self.addMenu("Spaces")
         for x in self.spaces:
@@ -130,13 +128,13 @@ class QuickLab(QMenu):
                                      space_type=data.type)
 
     def remove_space(self):
-        n, ok = QInputDialog.getItem(self, "Remove Space", "Spaces:",
-                                     self.spaces, 0, False)
+        n, ok = QtGui.QInputDialog.getItem(self, "Remove Space", "Spaces:",
+                                           self.spaces, 0, False)
         if ok:
             self.manip.remove_space(str(n))
 
     def inspect_spaces(self):
-        n, ok = QInputDialog.getItem(self, "Inspect Space", "Spaces:",
-                                     self.spaces, 0, False)
+        n, ok = QtGui.QInputDialog.getItem(self, "Inspect Space", "Spaces:",
+                                           self.spaces, 0, False)
         if ok:
             self.manip.inspect_space(str(n))

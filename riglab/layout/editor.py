@@ -20,9 +20,8 @@ from collections import namedtuple
 from contextlib import contextmanager
 
 import naming
-from PyQt4 import QtCore, QtGui, uic
-from wishlib.qt.QtGui import QMainWindow, QProgressDialog
 from wishlib.si import si, sisel, show_qt
+from wishlib.qt import QtCore, QtGui, loadUi, widgets
 from rigicon.layout.library_gui import RigIconLibrary
 
 import riglab
@@ -35,7 +34,7 @@ from .mapping import Mapping
 
 @contextmanager
 def pb():
-    d = show_qt(QProgressDialog)
+    d = show_qt(widgets.QProgressDialog)
     d.repaint()
     yield
     d.close()
@@ -47,7 +46,7 @@ class MyDelegate(QtGui.QItemDelegate):
         return QtCore.QSize(32, 32)
 
 
-class Editor(QMainWindow):
+class Editor(widgets.QMainWindow):
 
     MODES = ("Binding", "Animation")  # table matching Rig() indices
     IMAGES = {"check": "iconmonstr-check-mark-icon-256.png",
@@ -68,7 +67,7 @@ class Editor(QMainWindow):
 
     def initUI(self):
         ui_dir = os.path.join(os.path.dirname(__file__), "ui")
-        self.ui = uic.loadUi(os.path.join(ui_dir, "editor.ui"), self)
+        self.ui = loadUi(os.path.join(ui_dir, "editor.ui"), self)
         # resize stack via a delegate
         delegate = MyDelegate()
         self.ui.stack.setItemDelegate(delegate)

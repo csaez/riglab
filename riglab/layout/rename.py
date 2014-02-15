@@ -16,19 +16,18 @@
 import os
 from collections import namedtuple
 
-from PyQt4 import uic
-from PyQt4.QtGui import QDialog
+from wishlib.qt import QtGui, loadUi
 from naming import Manager as nm
 
 
-class Rename(QDialog):
+class Rename(QtGui.QDialog):
     side_data = nm().tokens["side"].values
     data_type = namedtuple("name_data", ["name", "side"])
 
     def __init__(self, parent=None):
         super(Rename, self).__init__(parent)
         ui_dir = os.path.join(os.path.dirname(__file__), "ui")
-        self.ui = uic.loadUi(os.path.join(ui_dir, "rename.ui"), self)
+        self.ui = loadUi(os.path.join(ui_dir, "rename.ui"), self)
         self.setWindowTitle("Rename item")
 
     @classmethod

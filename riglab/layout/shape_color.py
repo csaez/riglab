@@ -16,13 +16,12 @@
 import os
 import sys
 
-from PyQt4 import uic, QtGui
-from wishlib.qt.QtGui import QDialog
+from wishlib.qt import QtGui, loadUi, widgets
 from wishlib.utils import JSONDict
 from rigicon import library
 
 
-class ShapeColor(QDialog):
+class ShapeColor(widgets.QDialog):
 
     def __init__(self, parent=None):
         super(ShapeColor, self).__init__(parent)
@@ -45,7 +44,7 @@ class ShapeColor(QDialog):
 
     def init_ui(self):
         ui_dir = os.path.join(os.path.dirname(__file__), "ui")
-        self.ui = uic.loadUi(os.path.join(ui_dir, "shape_color.ui"), self)
+        self.ui = loadUi(os.path.join(ui_dir, "shape_color.ui"), self)
         # icons
         icons = [x.name for x in library.get_items()]
         for widget in (self.ui.fkIcon, self.ui.ikIcon, self.ui.upIcon):

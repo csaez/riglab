@@ -16,7 +16,7 @@
 import os
 from collections import namedtuple
 
-from PyQt4 import uic, QtGui
+from wishlib.qt import QtGui, loadUi
 from naming import Manager as nm
 
 
@@ -27,7 +27,7 @@ class SpaceName(QtGui.QDialog):
     def __init__(self, parent=None):
         super(SpaceName, self).__init__(parent)
         ui_dir = os.path.join(os.path.dirname(__file__), "ui")
-        self.ui = uic.loadUi(os.path.join(ui_dir, "rename.ui"), self)
+        self.ui = loadUi(os.path.join(ui_dir, "rename.ui"), self)
         self.setWindowTitle("Space Name")
         self.ui.space_type = self.ui.side
         self.ui.side_label.setText("Type")

@@ -16,14 +16,13 @@
 import os
 import sys
 
-from PyQt4 import uic, QtGui
-from wishlib.qt.QtGui import QDialog
 from wishlib.si import siget
+from wishlib.qt import QtGui, loadUi, widgets
 
 from ..psd.reader import ConeReader
 
 
-class PoseSpace(QDialog):
+class PoseSpace(widgets.QDialog):
     TABLE = {"sclx": "Second_Scaling_x",
              "scly": "Second_Scaling_y",
              "sclz": "Second_Scaling_z",
@@ -60,7 +59,7 @@ class PoseSpace(QDialog):
         images = {"pick": "iconmonstr-cursor-touch-icon-256.png",
                   "show": "iconmonstr-menu-2-icon-256.png"}
         ui_dir = os.path.join(os.path.dirname(__file__), "ui")
-        self.ui = uic.loadUi(os.path.join(ui_dir, "pose_space.ui"), self)
+        self.ui = loadUi(os.path.join(ui_dir, "pose_space.ui"), self)
         for k, v in images.iteritems():
             icons[k] = QtGui.QIcon(os.path.join(ui_dir, "images", v))
         # self.ui.pick.setIcon(icons.get("pick"))

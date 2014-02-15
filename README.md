@@ -11,13 +11,13 @@ Dependencies
 
 Installation
 ------------
-Get a xsiaddon file from [here](#) and drop it on a softimage viewport
-(includes wishlib, rigicon and naming packages).
+Get a pre-packed xsiaddon from [here](#) (includes `wishlib`, `rigicon` and
+`naming`) and drop it on a softimage viewport.
 
-*or...*
+*or*
 
-Copy `riglab_plugin.py` to a Softimage plugin directory, clone the repo and
-install the python modules typing in a terminal.
+Clone the repo, copy/symlink `riglab_plugin.py` to a softimage plugin
+directory and install the python modules typing in a terminal.
 
     python setup.py install
 
