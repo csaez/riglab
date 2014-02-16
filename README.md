@@ -23,7 +23,8 @@ directory and install the python modules typing in a terminal.
 
 Previews/Demos
 --------------
-[`riglab` album](http://www.vimeo.com/album/2631181) on Vimeo.
+- [Album](http://www.vimeo.com/album/2631181) on Vimeo.
+- [Articles](http://www.cesarsaez.me/tag/riglab.html) about it on my website.
 
 Goals
 -----

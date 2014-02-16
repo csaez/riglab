@@ -58,3 +58,15 @@
 2014-02-02 20:45:09     8626   +22   -21 9ef429b cesarte@gmail.com 	external/internal dependencies (templates+auto-snap)
 2014-02-03 20:09:40     8797  +199   -28 d7af7d6 cesarte@gmail.com 	quicklab + unified cache
 2014-02-04 02:29:32     8839  +137   -95 1025235 cesarte@gmail.com 	cleanup
+2014-02-04 02:32:12     9128  +289    -0 52ca82b cesarte@gmail.com 	changes updated
+2014-02-04 16:57:59     9144   +37   -21 d25537a cesarte@gmail.com 	skeleton support for internal dependencies
+2014-02-04 21:18:28     9145   +30   -29 776bb28 cesarte@gmail.com 	Transfer options
+2014-02-05 22:02:34     9156   +27   -16 13ed07a cesarte@gmail.com 	BUGFIX: load template file
+2014-02-05 23:41:10     9155   +35   -36 8320bab cesarte@gmail.com 	readme updated
+2014-02-06 23:26:07     9168   +25   -12 19668ed cesarte@gmail.com 	Negate transforms
+2014-02-07 01:01:45     9192   +46   -22 607ab78 cesarte@gmail.com 	solvers cleanup
+2014-02-08 00:49:34     9572  +470   -90 9cdb235 cesarte@gmail.com 	rig cleanup + 1st draft psd spaces
+2014-02-08 22:02:44    10110  +646  -108 4b80059 cesarte@gmail.com 	psd (aka reader) spaces working!
+2014-02-15 16:41:45    10103   +32   -39 89cbb83 cesarte@gmail.com 	wishlib 0.3.0
+2014-02-15 16:52:26    10103    +1    -1 ff8e55a cesarte@gmail.com 	typo
+2014-02-16 11:54:54    10107    +4    -0 e8cbb59 cesarte@gmail.com 	riglab videos
