@@ -21,6 +21,10 @@ directory and install the python modules typing in a terminal.
 
     python setup.py install
 
+Previews/Demos
+--------------
+[`riglab` album](http://www.vimeo.com/album/2631181) on Vimeo.
+
 Goals
 -----
 `riglab` is in the making, but it is important set the goals of the project
