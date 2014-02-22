@@ -186,12 +186,12 @@ class Manipulator(SIWrapper):
         for x in (self.anim, self.zero, self.orient, self.space):
             si.DeleteObj(x)
 
-    def align(self, dst, component="orient"):
+    def align(self, dst, component="space"):
         if hasattr(self, component):
             src = getattr(self, component)
             src.Kinematics.Global.Transform = dst.Kinematics.Global.Transform
 
-    def align_matrix4(self, m4, component="orient"):
+    def align_matrix4(self, m4, component="space"):
         if hasattr(self, component):
             src = getattr(self, component)
             utils.align_matrix4(src, m4)
