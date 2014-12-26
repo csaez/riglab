@@ -24,7 +24,7 @@ directory and install the python modules typing in a terminal.
 Previews/Demos
 --------------
 - [Album](http://www.vimeo.com/album/2631181) on Vimeo.
-- [Articles](http://www.cesarsaez.me/tag/riglab.html) about it on my website.
+- [Articles](http://www.cesarsaez.me/tag/riglab) about it on my website.
 
 Goals
 -----
