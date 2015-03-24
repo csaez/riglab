@@ -17,12 +17,12 @@ import os
 import sys
 
 from wishlib.si import siget
-from wishlib.qt import QtGui, loadUi, widgets
+from wishlib.qt import QtGui, loadUi, set_style
 
 from ..psd.reader import ConeReader
 
 
-class PoseSpace(widgets.QDialog):
+class PoseSpace(QtGui.QDialog):
     TABLE = {"sclx": "Second_Scaling_x",
              "scly": "Second_Scaling_y",
              "sclz": "Second_Scaling_z",
@@ -82,5 +82,7 @@ class PoseSpace(widgets.QDialog):
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-    PoseSpace().show()
+    win = PoseSpace()
+    set_style(win, True)
+    win.show()
     app.exec_()

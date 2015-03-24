@@ -18,6 +18,7 @@ import os
 import naming
 from rigicon.icon import Icon
 from wishlib.si import si, siget, simath, SIWrapper, sianchor
+from wishlib.qt import set_style
 
 from . import utils
 from .layout.pose_space import PoseSpace
@@ -143,7 +144,9 @@ class Manipulator(SIWrapper):
                 continue
             space = data.get(space_name)
             if space_type == "reader":
-                PoseSpace(space, self, parent=sianchor()).show()
+                win = PoseSpace(space, self, parent=sianchor())
+                set_style(win, True)
+                win.show()
             else:
                 si.InspectObj(space)
 

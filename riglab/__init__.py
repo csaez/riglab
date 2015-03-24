@@ -14,39 +14,49 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import naming
-from wishlib.si import si, siget
-from .rig import Rig
 from . import cache
+from wishlib import inside_maya, inside_softimage
 
+if inside_softimage():
+    from wishlib.si import si, siget
+    from .rig import Rig
 
-def add_rig(name):
-    r = Rig.new(name)
-    cache.rig[r.obj.FullName] = r
-    return r
+    def add_rig(name):
+        r = Rig.new(name)
+        cache.rig[r.obj.FullName] = r
+        return r
 
+    def list_rigs():
+        nm = naming.Manager()
+        result = list()
+        for x in si.ActiveSceneRoot.FindChildren2("*", "#model"):
+            data = nm.decompose(x.Name, "model")
+            if data and data.get("category") == "character":
+                result.append(x.Name)
+        return result
 
-def list_rigs():
-    nm = naming.Manager()
-    result = list()
-    for x in si.ActiveSceneRoot.FindChildren2("*", "#model"):
-        data = nm.decompose(x.Name, "model")
-        if data and data.get("category") == "character":
-            result.append(x.Name)
-    return result
+    def get_rig(name):
+        # init cache
+        if not hasattr(cache, "rig"):
+            cache.rig = dict()
+        # get obj and init rig
+        o = siget(name)
+        if not o:
+            return None
+        r = cache.rig.get(name)
+        if not r:
+            r = Rig(o)
+            cache.rig[name] = r
+        return r
 
+elif inside_maya():
+    def add_rig(name):
+        pass
 
-def get_rig(name):
-    # init cache
-    if not hasattr(cache, "rig"):
-        cache.rig = dict()
-    # get obj and init rig
-    o = siget(name)
-    if not o:
-        return None
-    r = cache.rig.get(name)
-    if not r:
-        r = Rig(o)
-        cache.rig[name] = r
-    return r
+    def list_rigs():
+        return list()
+
+    def get_rig(name):
+        pass
 
 scene_rigs = (get_rig(x) for x in list_rigs())

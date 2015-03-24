@@ -16,7 +16,7 @@
 import os
 
 from wishlib.si import si, sisel
-from wishlib.qt import QtGui, widgets
+from wishlib.qt import QtGui
 
 from .space_name import SpaceName
 from ..manipulator import Manipulator
@@ -58,7 +58,7 @@ def get_solver(obj, solver_class):
     return s
 
 
-class QuickLab(widgets.QMenu):
+class QuickLab(QtGui.QMenu):
     IMAGES = {"check": "iconmonstr-check-mark-icon-256.png", }
     for k, v in IMAGES.iteritems():
         IMAGES[k] = os.path.join(os.path.dirname(__file__), "ui", "images", v)

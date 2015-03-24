@@ -21,7 +21,7 @@ from contextlib import contextmanager
 
 import naming
 from wishlib.si import si, sisel, show_qt
-from wishlib.qt import QtCore, QtGui, loadUi, widgets
+from wishlib.qt import QtCore, QtGui, loadUi
 from rigicon.layout.library_gui import RigIconLibrary
 
 import riglab
@@ -32,9 +32,19 @@ from .shape_color import ShapeColor
 from .mapping import Mapping
 
 
+class ProgressDialog(QtGui.QProgressDialog):
+
+    def __init__(self, parent, label="Work in progress..."):
+        super(ProgressDialog, self).__init__(parent)
+        self.setWindowTitle("Working...")
+        self.setLabelText(label)
+        self.setMinimum(0)
+        self.setMaximum(0)
+        self.setCancelButton(None)
+
 @contextmanager
 def pb():
-    d = show_qt(widgets.QProgressDialog)
+    d = show_qt(ProgressDialog)
     d.repaint()
     yield
     d.close()
@@ -46,7 +56,7 @@ class MyDelegate(QtGui.QItemDelegate):
         return QtCore.QSize(32, 32)
 
 
-class Editor(widgets.QMainWindow):
+class Editor(QtGui.QMainWindow):
 
     MODES = ("Binding", "Animation")  # table matching Rig() indices
     IMAGES = {"check": "iconmonstr-check-mark-icon-256.png",
@@ -548,7 +558,7 @@ class Editor(widgets.QMainWindow):
         if curr_item:
             self.ui.stack.setCurrentItem(curr_item)
         self._mute = False
-        self.show()
+        self.raise_()
 
     def disable_gui(self, value):
         widgets = (self.ui.stack, self.ui.groupMenu,

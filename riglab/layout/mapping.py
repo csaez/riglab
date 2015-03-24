@@ -16,7 +16,7 @@
 from difflib import SequenceMatcher
 
 from wishlib.si import sisel
-from wishlib.qt import QtGui, QtCore, widgets
+from wishlib.qt import QtGui, QtCore
 
 
 class TableSwitcher(QtGui.QTableWidget):
@@ -31,7 +31,7 @@ class TableSwitcher(QtGui.QTableWidget):
         self.setItem(src_row, src_col, QtGui.QTableWidgetItem(dest_value))
 
 
-class Mapping(widgets.QDialog):
+class Mapping(QtGui.QDialog):
 
     def __init__(self, *args, **kwds):
         super(Mapping, self).__init__(*args, **kwds)

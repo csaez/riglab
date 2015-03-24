@@ -16,12 +16,12 @@
 import os
 import sys
 
-from wishlib.qt import QtGui, loadUi, widgets
+from wishlib.qt import QtGui, loadUi, set_style
 from wishlib.utils import JSONDict
 from rigicon import library
 
 
-class ShapeColor(widgets.QDialog):
+class ShapeColor(QtGui.QDialog):
 
     def __init__(self, parent=None):
         super(ShapeColor, self).__init__(parent)
@@ -46,7 +46,7 @@ class ShapeColor(widgets.QDialog):
         ui_dir = os.path.join(os.path.dirname(__file__), "ui")
         self.ui = loadUi(os.path.join(ui_dir, "shape_color.ui"), self)
         # icons
-        icons = [x.name for x in library.get_items()]
+        icons = [x.get("Name") for x in library.get_items()]
         for widget in (self.ui.fkIcon, self.ui.ikIcon, self.ui.upIcon):
             widget_name = str(widget.objectName())
             # set default values
@@ -89,5 +89,7 @@ class ShapeColor(widgets.QDialog):
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-    ShapeColor().show()
+    win = ShapeColor()
+    set_style(win, True)
+    win.show()
     app.exec_()
