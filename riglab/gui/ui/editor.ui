@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>364</width>
+    <height>450</height>
+   </rect>
+  </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::CustomContextMenu</enum>
+  </property>
+  <property name="windowTitle">
+   <string>RigLab Editor</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="margin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QTreeWidget" name="stack">
+      <property name="dragEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>32</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="expandsOnDoubleClick">
+       <bool>false</bool>
+      </property>
+      <attribute name="headerDefaultSectionSize">
+       <number>250</number>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>Name</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>State</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>364</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="behaviourMenu">
+    <property name="title">
+     <string>Behaviours</string>
+    </property>
+    <addaction name="removeBehaviour"/>
+    <addaction name="snap"/>
+    <addaction name="inspect"/>
+    <addaction name="separator"/>
+    <addaction name="solverManipulators"/>
+    <addaction name="solverSkeleton"/>
+   </widget>
+   <widget class="QMenu" name="rigMenu">
+    <property name="title">
+     <string>Rig</string>
+    </property>
+    <widget class="QMenu" name="activeRig">
+     <property name="title">
+      <string>ActiveRig</string>
+     </property>
+     <addaction name="newRig"/>
+     <addaction name="separator"/>
+    </widget>
+    <widget class="QMenu" name="modeMenu">
+     <property name="title">
+      <string>Mode</string>
+     </property>
+     <addaction name="deformationMode"/>
+     <addaction name="riggingMode"/>
+     <addaction name="separator"/>
+     <addaction name="savePose"/>
+    </widget>
+    <addaction name="reload"/>
+    <addaction name="separator"/>
+    <addaction name="activeRig"/>
+    <addaction name="modeMenu"/>
+    <addaction name="setSkeleton"/>
+    <addaction name="setMeshes"/>
+   </widget>
+   <widget class="QMenu" name="groupMenu">
+    <property name="title">
+     <string>Groups</string>
+    </property>
+    <widget class="QMenu" name="templateMenu">
+     <property name="title">
+      <string>Templates</string>
+     </property>
+     <addaction name="copyTemplate"/>
+     <addaction name="pasteTemplate"/>
+     <addaction name="separator"/>
+     <addaction name="saveTemplate"/>
+     <addaction name="loadTemplate"/>
+    </widget>
+    <widget class="QMenu" name="addBehaviour">
+     <property name="title">
+      <string>Add Behaviour</string>
+     </property>
+     <addaction name="addFK"/>
+     <addaction name="addIK"/>
+     <addaction name="addSplineIK"/>
+     <addaction name="separator"/>
+     <addaction name="autoName"/>
+    </widget>
+    <addaction name="addGroup"/>
+    <addaction name="removeGroup"/>
+    <addaction name="separator"/>
+    <addaction name="addBehaviour"/>
+    <addaction name="templateMenu"/>
+    <addaction name="addState"/>
+    <addaction name="removeState"/>
+    <addaction name="autoSnap"/>
+    <addaction name="separator"/>
+    <addaction name="groupManipulators"/>
+    <addaction name="groupSkeleton"/>
+   </widget>
+   <widget class="QMenu" name="extrasMenu">
+    <property name="title">
+     <string>Config</string>
+    </property>
+    <addaction name="namingConvention"/>
+    <addaction name="shapeColor"/>
+    <addaction name="rigiconLibrary"/>
+    <addaction name="separator"/>
+    <addaction name="docs"/>
+   </widget>
+   <widget class="QMenu" name="manipulatorMenu">
+    <property name="title">
+     <string>Manipulators</string>
+    </property>
+    <addaction name="fromSelection"/>
+    <addaction name="separator"/>
+    <addaction name="addSpace"/>
+    <addaction name="removeSpace"/>
+    <addaction name="separator"/>
+    <addaction name="manDebug"/>
+    <addaction name="manVisibility"/>
+   </widget>
+   <addaction name="rigMenu"/>
+   <addaction name="groupMenu"/>
+   <addaction name="behaviourMenu"/>
+   <addaction name="manipulatorMenu"/>
+   <addaction name="extrasMenu"/>
+  </widget>
+  <action name="actionAdd_Group">
+   <property name="text">
+    <string>Add Group</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="actionCharacter_A">
+   <property name="text">
+    <string>Character A</string>
+   </property>
+  </action>
+  <action name="actionCharacter_B">
+   <property name="text">
+    <string>Character B</string>
+   </property>
+  </action>
+  <action name="actionCharacter_C">
+   <property name="text">
+    <string>Character C</string>
+   </property>
+  </action>
+  <action name="newRig">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="addGroup">
+   <property name="text">
+    <string>New Group</string>
+   </property>
+  </action>
+  <action name="removeGroup">
+   <property name="text">
+    <string>Remove Group</string>
+   </property>
+  </action>
+  <action name="actionLoad_State">
+   <property name="text">
+    <string>Load State</string>
+   </property>
+  </action>
+  <action name="saveState">
+   <property name="text">
+    <string>Save as...</string>
+   </property>
+  </action>
+  <action name="loadState">
+   <property name="text">
+    <string>Load template</string>
+   </property>
+  </action>
+  <action name="removeBehaviour">
+   <property name="text">
+    <string>Remove</string>
+   </property>
+  </action>
+  <action name="editBehaviour">
+   <property name="text">
+    <string>Edit</string>
+   </property>
+  </action>
+  <action name="manageState">
+   <property name="text">
+    <string>Manage</string>
+   </property>
+  </action>
+  <action name="loadTemplate">
+   <property name="text">
+    <string>Load from...</string>
+   </property>
+  </action>
+  <action name="saveTemplate">
+   <property name="text">
+    <string>Save as...</string>
+   </property>
+  </action>
+  <action name="save">
+   <property name="text">
+    <string>Save as...</string>
+   </property>
+  </action>
+  <action name="removeState">
+   <property name="text">
+    <string>Remove State...</string>
+   </property>
+  </action>
+  <action name="addState">
+   <property name="text">
+    <string>Save State...</string>
+   </property>
+  </action>
+  <action name="setSkeleton">
+   <property name="text">
+    <string>Set Skeleton</string>
+   </property>
+  </action>
+  <action name="deformationMode">
+   <property name="text">
+    <string>Binding</string>
+   </property>
+  </action>
+  <action name="riggingMode">
+   <property name="text">
+    <string>Animation</string>
+   </property>
+  </action>
+  <action name="savePose">
+   <property name="text">
+    <string>Save Current Pose</string>
+   </property>
+  </action>
+  <action name="defaultGroup">
+   <property name="text">
+    <string>Set as default</string>
+   </property>
+  </action>
+  <action name="copyTemplate">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+  </action>
+  <action name="pasteTemplate">
+   <property name="text">
+    <string>Paste</string>
+   </property>
+  </action>
+  <action name="setMeshes">
+   <property name="text">
+    <string>Set Meshes</string>
+   </property>
+  </action>
+  <action name="inspect">
+   <property name="text">
+    <string>Inspect Parameters</string>
+   </property>
+  </action>
+  <action name="snap">
+   <property name="text">
+    <string>Snap</string>
+   </property>
+  </action>
+  <action name="autoSnap">
+   <property name="text">
+    <string>Auto-Snap</string>
+   </property>
+  </action>
+  <action name="namingConvention">
+   <property name="text">
+    <string>Naming Convention</string>
+   </property>
+  </action>
+  <action name="rigiconLibrary">
+   <property name="text">
+    <string>RigIcon Library</string>
+   </property>
+  </action>
+  <action name="shapeColor">
+   <property name="text">
+    <string>Shape and Colors</string>
+   </property>
+  </action>
+  <action name="actionAbout_2">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="docs">
+   <property name="text">
+    <string>Documentation</string>
+   </property>
+  </action>
+  <action name="groupSkeleton">
+   <property name="text">
+    <string>Select Skeleton</string>
+   </property>
+  </action>
+  <action name="groupManipulators">
+   <property name="text">
+    <string>Select Manipulators</string>
+   </property>
+  </action>
+  <action name="solverSkeleton">
+   <property name="text">
+    <string>Select Skeleton</string>
+   </property>
+  </action>
+  <action name="solverManipulators">
+   <property name="text">
+    <string>Select Manipulators</string>
+   </property>
+  </action>
+  <action name="addFK">
+   <property name="text">
+    <string>FK</string>
+   </property>
+  </action>
+  <action name="addIK">
+   <property name="text">
+    <string>IK</string>
+   </property>
+  </action>
+  <action name="addSplineIK">
+   <property name="text">
+    <string>SplineIK</string>
+   </property>
+  </action>
+  <action name="manDebug">
+   <property name="text">
+    <string>Toggle Space Debug</string>
+   </property>
+  </action>
+  <action name="actionSelect">
+   <property name="text">
+    <string>Select</string>
+   </property>
+  </action>
+  <action name="manVisibility">
+   <property name="text">
+    <string>Toggle Visibility</string>
+   </property>
+  </action>
+  <action name="actionUnhide">
+   <property name="text">
+    <string>Unhide</string>
+   </property>
+  </action>
+  <action name="actionList">
+   <property name="text">
+    <string>list</string>
+   </property>
+  </action>
+  <action name="addSpace">
+   <property name="text">
+    <string>Add Space</string>
+   </property>
+  </action>
+  <action name="removeSpace">
+   <property name="text">
+    <string>Remove Space</string>
+   </property>
+  </action>
+  <action name="reload">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
+  <action name="fromSelection">
+   <property name="text">
+    <string>Get Manipulator From Softimage</string>
+   </property>
+  </action>
+  <action name="autoName">
+   <property name="text">
+    <string>Auto-Name</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>stack_contextmenu(qpoint)</slot>
+ </slots>
+</ui>
