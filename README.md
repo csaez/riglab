@@ -38,63 +38,69 @@ system.
 early on in order to justify why I think we could do better than current
 rigging conventions.
 
-- **Deformation first**: A lot of auto-riggers out there use a guide system
-to create the skeleton and animation rig at the same time, making really hard
-iterate over the joint placement once the setup is created (rebuild tend to
-be the only option). `riglab` encourages a different approach, where you
-have to solve joint placement first, when everything is still clean and
-simple, and then feed `riglab` with that skeleton in order to assign different
-behaviors creating your animation rig.
+- **Deformation first**: A lot of auto-riggers out there use a guide system to
+  create the skeleton and animation rig at the same time, making really hard
+  iterate over the joint placement once the setup is created (rebuild tend to
+  be the only option). `riglab` encourages a different approach, where you have
+  to solve joint placement first, when everything is still clean and simple,
+  and then feed `riglab` with that skeleton in order to assign different
+  behaviors creating your animation rig.
 
-- **Prototyping**: `riglab` works at a lower level than most modular auto-riggers,
-but not as lower as vanilla DCCs, this allow solve a wide range of rigs using
-behaviours as the generic building block, solving snaping between states
-and multiple spaces "for free".
+- **Prototyping**: `riglab` works at a lower level than most modular
+  auto-riggers, but not as lower as vanilla DCCs, this allow solve a wide range
+  of rigs using behaviours as the generic building block, solving snaping
+  between states and multiple spaces "for free".
 
-- **Editing**: most auto-rigger scripts manage the creation process and
-dump the results into the 3d scene, leaving the editing side up to
-you. `riglab` is not just about creation, it is session persistent and gives
-you access to existing rigs via a rich python API or GUI tools (this is also
-important for animation tools).
+- **Editing**: most auto-rigger scripts manage the creation process and dump
+  the results into the 3d scene, leaving the editing side up to you. `riglab`
+  is not just about creation, it is session persistent and gives you access to
+  existing rigs via a rich python API or GUI tools (this is also important for
+  animation tools).
 
 - **Reusability**: `riglab` implements a quite powerfull templating system,
-this allows re-use any previous configuration without write a single
-line of code.
+  this allows re-use any previous configuration without write a single line of
+  code.
 
 - **Pipeline friendly**: `riglab` is highly customizable: names, shapes,
-solvers and almost every component is selected from a library or defined by
-text configuration files.
-
-
-## Dependencies
-
-`riglab` relies on the following libraries:
-
-- [PySide](#) (included in Maya>=2014)
-- [nosetest](#) (testing)
-- [mock](#) (testing)
-- [coverage](#) (testing)
-
-Good news is you don need to worry about any of these unless you want to run the test suite or contribute code to the project (untested pull requests will not be accepted... time to step up!).
+  solvers and almost every component is selected from a library or defined by
+  text configuration files.
 
 
 ## Installation
 
 There are several ways to get `riglab` installed on your system.
-- You can install it as a standard python library through its `setup.py` script.
-- You can clone the repo and add the inner `riglab` directory to your `PYTHONPATH` environment variable.
-- You can copy/symlink the inner `riglab` directory to your `~/maya/scripts` directory.
+- You can install it as a standard python library through its `setup.py`
+  script.
+- You can clone the repo and add the inner `riglab` directory to your
+  `PYTHONPATH` environment variable.
+- You can copy/symlink the inner `riglab` directory to your `~/maya/scripts`
+  directory.
 
 ##### There are so many options, what should I choose?
 
 My humble recommendation:
 - Users: copy the inner riglab dir to `~/maya/scripts`
-- Developers: `setup.py` or `PYTHONPATH` (you probably know what suits you better).
+- Developers: `setup.py` or `PYTHONPATH` (you probably know what suits you
+  better).
+
+
+## Dependencies
+
+`riglab` relies on the following python libraries:
+
+- [PySide](#) (included in Maya>=2014)
+- [mock](#) (testing only)
+
+Good news is you dont need to worry about any of these dependencies unless you
+want to run the test suite or contribute code to the project (untested pull
+requests will not be accepted... time to step up!).
 
 
 ## Contribute
 
-It's too soon for pull requests, but if you want to help to shape the project please contact me through Github's issues,  email or any social media sites (I'm not hard to find).
+It's too soon for pull requests, but if you really want to help to shape the
+project please contact me through the github's issues, email or any social
+media sites (I'm not hard to find).
 
 
 ## Ussage
