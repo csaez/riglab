@@ -2,7 +2,6 @@ import sys
 import unittest
 from mock import MagicMock
 
-
 # patch maya dependencies
 sys.modules["maya"] = MagicMock()
 sys.modules["naming"] = MagicMock()
