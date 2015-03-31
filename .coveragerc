@@ -1,3 +1,5 @@
 [report]
 
-omit=*gui/*
+omit=
+    *gui/*
+    *tests/*
