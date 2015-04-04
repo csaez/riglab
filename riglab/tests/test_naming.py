@@ -41,6 +41,14 @@ class NamingTests(unittest.TestCase):
             n.delete_profile(p)
         self.assertEqual(len(n.list_profiles()), 0)
 
+    def test_profile_fields(self):
+        fields = ["category", "name", "enum", "side", "type"]
+        p = n.new_profile("test")
+        for f in fields:
+            p.add_field(f)
+        self.assertEqual(p.list_fields(), fields)
+        n.delete_profile("tests")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

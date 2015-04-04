@@ -9,6 +9,14 @@ class Profile(object):
         self.fields = list()
         self.separator = "_"
 
+    def add_field(self, name):
+        f = Field(name)
+        self.fields.append(f)
+        return f
+
+    def list_fields(self):
+        return [f.name for f in self.fields]
+
 
 class Field(object):
 
