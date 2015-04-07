@@ -4,6 +4,13 @@ from riglab import naming as n
 
 class NamingTests(unittest.TestCase):
 
+    def setUp(self):
+        n.new_profile("test")
+
+    def tearDown(self):
+        n.delete_profile("test")
+        n.clear_tokens()
+
     def test_list_tokens(self):
         n.clear_tokens()
         self.assertEqual(len(n.list_tokens()), 0)
@@ -31,24 +38,41 @@ class NamingTests(unittest.TestCase):
         self.assertIsNotNone(n.list_profiles())
 
     def test_new_profile(self):
-        self.assertIsNotNone(n.new_profile("test"))
-        self.assertIn("test", n.list_profiles())
-        self.assertIsNotNone(n.get_profile("test"))
-        self.assertTrue(n.set_profile("test"))
-        self.assertEqual(n.current_profile().name, "test")
-
-        for p in n.list_profiles():
-            n.delete_profile(p)
-        self.assertEqual(len(n.list_profiles()), 0)
+        self.assertIsNotNone(n.new_profile("test1"))
+        self.assertIn("test1", n.list_profiles())
+        self.assertIsNotNone(n.get_profile("test1"))
+        self.assertTrue(n.set_profile("test1"))
+        self.assertEqual(n.current_profile().name, "test1")
+        l1 = len(n.list_profiles())
+        n.delete_profile("test1")
+        self.assertEqual(len(n.list_profiles()), l1 - 1)
 
     def test_profile_fields(self):
         fields = ["category", "name", "enum", "side", "type"]
-        p = n.new_profile("test")
+        p = n.current_profile()
         for f in fields:
             p.add_field(f)
         self.assertEqual(p.list_fields(), fields)
         n.delete_profile("tests")
 
+    def test_solver(self):
+        p = n.current_profile()
+        for i in range(3):
+            n.clear_tokens()
+            n.new_token("l", "L")
+            n.new_token("r", "R")
+            n.new_token("m", "M")
+            f = p.add_field("side")
+            f.append_token("l")
+            f.append_token("r")
+            f.append_token("m")
+            f.set_default("m")
+            p.add_field("name")
+            (
+                lambda: self.assertEqual(n.solve("test"), "M_test"),
+                lambda: self.assertIsNone(n.solve()),
+                lambda: self.assertIsNone(n.solve("l"))
+            )[i]()
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
